@@ -14,8 +14,8 @@ ifeq ($(WITH_ZCHAFF), 1)
 	solvers.build=minisat.build zchaff.build
 	solvers.clean=minisat.clean zchaff.clean
 else
-	solvers.build=minisat.build
-	solvers.clean=minisat.clean
+	solvers.build=minisat.build glucose.build
+	solvers.clean=minisat.clean glucose.clean
 endif
 
 # This target builds the libnusmv shared library which is used by the lower
@@ -45,6 +45,12 @@ zchaff.build: system.requirement
 
 zchaff.clean:
 	make -C ZChaff clean
+
+glucose.build:
+	make -C Glucose
+
+glucose.clean:
+	make -C Glucose clean
 
 # Builds the nusmv binaries which are required to generate the libnusmv
 nusmv.build: system.requirement $(solvers.build)
