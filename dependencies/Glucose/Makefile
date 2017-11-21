@@ -24,14 +24,11 @@ glucose.unpacked:
 	tar xzvf glucose-syrup-4.1.tar.gz #unzip glucose-syrup-4.1.zip
 	touch glucose.unpacked
 
-# This target successively applies the patches required to make minisat linkable
-# with nusmv and to ensure its smooth compilation on all (tested) platforms.
+#TODO
 glucose.patched: glucose.unpacked
-	# Patch nusmv to make it linkable with NuSMV
-	patch -p0 -N < nusmv.patch #TODO
 	# Patch the makefiles to produce position independent code
 	# This is necessary to create a sharedlib containing the minisat symbols
-	patch -p0 -N < pynusmv.patch #TODO
+	patch -p0 -N < glucose.patch #TODO
 	touch glucose.patched
 
 # This target proceeds to the build (proper) of the minisat codebase

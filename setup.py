@@ -954,6 +954,8 @@ EXTENSIONS = [
             {'sources':['pynusmv_lower_interface/nusmv/sat/sat.i']},
             **EXTENSION_ARGS)),
 
+    #TODO glucose
+
     # set module
     Extension(
         'pynusmv_lower_interface.nusmv.set._set',
