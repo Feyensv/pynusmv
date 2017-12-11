@@ -15,24 +15,25 @@ all: glucose.built
 
 # This target wipes off everything that has been unpacked and built.
 clean:
-	rm -rf glucose
+	rm -rf glucose-syrup-4.1
 	rm glucose.unpacked
 	rm glucose.patched
 
 # This target just unpacks the zip containing minisat
 glucose.unpacked:
-	tar xzvf glucose-syrup-4.1.tar.gz #unzip glucose-syrup-4.1.zip
+	tar xzvf glucose-syrup-4.1.tgz #unzip glucose-syrup-4.1.zip
 	touch glucose.unpacked
 
-#TODO
+# patch glucose source code
 glucose.patched: glucose.unpacked
-	# Patch the makefiles to produce position independent code
-	# This is necessary to create a sharedlib containing the minisat symbols
-	patch -p0 -N < glucose.patch #TODO
+	#patch -p0 -N < glucose.patch
 	patch -p0 -N < glucose_simp_wrapper.patch
 	patch -p0 -N < glucose_core_wrapper.patch
+    # Patch the makefiles to produce position independent code
+    # This is necessary to create a sharedlib containing the minisat symbols
+	patch -p0 -N < makefiles.patch
 	touch glucose.patched
 
-# This target proceeds to the build (proper) of the minisat codebase
+# This target proceeds to the build (proper) of the glucose codebase
 glucose.built: glucose.patched
-	make -C glucose
+	make -C glucose-syrup-4.1/simp #TODO

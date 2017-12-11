@@ -955,6 +955,11 @@ EXTENSIONS = [
             **EXTENSION_ARGS)),
 
     #TODO glucose
+    #Extension(
+    #    'pynusmv_lower_interface.glucose',
+    #   **dict(
+    #        {'sources':['pynusmv_lower_interface/glucose/glucose.i']},
+    #       **EXTENSION_ARGS)),
 
     # set module
     Extension(

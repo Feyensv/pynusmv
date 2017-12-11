@@ -1,0 +1,20 @@
+diff -Naur glucose-syrup-4.1/mtl/config.mk glucose-syrup-4.1/mtl/config2.mk
+--- glucose-syrup-4.1/mtl/config.mk	2016-12-08 13:48:26.000000000 +0100
++++ glucose-syrup-4.1/mtl/config2.mk	2017-11-28 20:38:35.284000000 +0100
+@@ -4,3 +4,5 @@
+ ##
+ ##  CFLAGS += -I/usr/local/include
+ ##  LFLAGS += -L/usr/local/lib
++
++CFLAGS += -fPIC
+diff -Naur glucose-syrup-4.1/simp/Makefile glucose/Makefile
+--- glucose-syrup-4.1/simp/Makefile	2016-12-08 13:48:26.000000000 +0100
++++ glucose/Makefile	2017-12-11 19:35:59.900000000 +0100
+@@ -1,5 +1,5 @@
+ EXEC = glucose
+ DEPDIR    = mtl utils core
+-MROOT = $(PWD)/..
++MROOT = ../
+
+ include $(MROOT)/mtl/template.mk
+
