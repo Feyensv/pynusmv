@@ -13,7 +13,7 @@
 ifeq ($(WITH_ZCHAFF), 1)
 	solvers.build=minisat.build zchaff.build
 	solvers.clean=minisat.clean zchaff.clean
-else
+else#TODO ifeq( with glucose) --> make glucose
 	solvers.build=minisat.build glucose.build
 	solvers.clean=minisat.clean glucose.clean
 endif

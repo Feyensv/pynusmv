@@ -27,8 +27,7 @@ glucose.unpacked:
 # patch glucose source code
 glucose.patched: glucose.unpacked
 	#patch -p0 -N < glucose.patch
-	patch -p0 -N < glucose_simp_wrapper.patch
-	patch -p0 -N < glucose_core_wrapper.patch
+	patch -p0 -N < glucose_wrappers.patch
     # Patch the makefiles to produce position independent code
     # This is necessary to create a sharedlib containing the minisat symbols
 	patch -p0 -N < makefiles.patch
@@ -36,4 +35,5 @@ glucose.patched: glucose.unpacked
 
 # This target proceeds to the build (proper) of the glucose codebase
 glucose.built: glucose.patched
-	make -C glucose-syrup-4.1/simp #TODO
+	make -C glucose-syrup-4.1/simp #TODO add parallel if needed
+	

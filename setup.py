@@ -37,6 +37,7 @@ INSTALL_REQUIRES = ['pyparsing']
 # 1. Parse the global configuration options (which are not recognised by setup)
 parser   = argparse.ArgumentParser()
 parser.add_argument("--with-zchaff", action="store_true", help="build zchaff and link pynusmv against it")
+#TODO parser.add_argument("--with-glucose", action="store_true", help="build glucose to enable its use in pynusmv")
 args,unk = parser.parse_known_args()
 
 # 2. reset sys.argv for further processing by the setup script
