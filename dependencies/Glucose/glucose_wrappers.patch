@@ -168,4 +168,36 @@ diff -Naur glucose-syrup-4.1/core/Solver_C.h glucose/core/Solver_C.h
 +
 +//TODO if other functions needed
 +#endif //PYNUSMV_SOLVER_C_H
-
+diff -Naur glucose-syrup-4.1/Makefile glucose/Makefile
+--- glucose-syrup-4.1/Makefile	1970-01-01 01:00:00.000000000 +0100
++++ glucose/core/Makefile	2018-01-02 11:13:23.960000000 +0100
+@@ -0,0 +1,29 @@
++LIBNAME = lib.a
++EXT_LIBNAME = libGlucose.a
++EXT_LIBIFC = Solver_C.h
++COREDIR = simp
++
++LN ?= ln -s
++RANLIB ?= ranlib
++RM ?= rm -f
++MAKE ?= make
++
++# ----------------------------------------------------------------------
++# this target is invoked by the builder
++lib: $(EXT_LIBNAME) $(EXT_LIBIFC)
++	@echo Done
++
++clean:
++	cd $(COREDIR) && $(MAKE) clean
++	$(RM) $(EXT_LIBNAME) $(EXT_LIBIFC)
++	$(RM) $(COREDIR)/depend.mk
++# ----------------------------------------------------------------------
++
++$(COREDIR)/$(LIBNAME):
++	cd $(COREDIR) && $(MAKE) libs && $(RANLIB) $(LIBNAME) #libs libp libr libd TODO
++
++$(EXT_LIBNAME): $(COREDIR)/$(LIBNAME)
++	$(LN) $(COREDIR)/$(LIBNAME) $(EXT_LIBNAME)
++
++$(EXT_LIBIFC):
++	$(LN) $(COREDIR)/$(EXT_LIBIFC) $(EXT_LIBIFC)
