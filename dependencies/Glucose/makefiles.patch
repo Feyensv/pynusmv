@@ -7,14 +7,3 @@ diff -Naur glucose-syrup-4.1/mtl/config.mk glucose-syrup-4.1/mtl/config2.mk
  ##  LFLAGS += -L/usr/local/lib
 +
 +CFLAGS += -fPIC
-diff -Naur glucose/Makefile glucose-syrup-4.1/simp/Makefile
---- glucose/Makefile2	2017-12-11 21:06:11.004000000 +0100
-+++ glucose-syrup-4.1/simp/Makefile	2016-12-08 13:48:26.000000000 +0100
-@@ -1,5 +1,5 @@
- EXEC = glucose
- DEPDIR    = mtl utils core
--MROOT = $(PWD)/..
-+MROOT = ../
-
- include $(MROOT)/mtl/template.mk
-
