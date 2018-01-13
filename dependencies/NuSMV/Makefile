@@ -13,23 +13,25 @@
 # The path to the (unpacked) source folder of NuSMV
 NUSMV=./NuSMV-2.5.4/nusmv/
 
-# The path to the patched and compiled version of minisat
+# The path to the patched and compiled version of minisat, zchaff and glucose
 MINISAT=../../../MiniSat/minisat
 ZCHAFF=../../../ZChaff/zchaff64
+GLUCOSE=../../../Glucose/glucose-syrup-4.1
 
 RECONFIGURE := $(shell python3 ./reconfiguration_needed.py --test)
 
+solvers_config = --enable-minisat \
+			--with-minisat-libdir=$(MINISAT) \
+			--with-minisat-incdir=$(MINISAT) 
 ifeq ($(WITH_ZCHAFF), 1)
-	solvers_config= --enable-minisat \
-									--with-minisat-libdir=$(MINISAT) \
-									--with-minisat-incdir=$(MINISAT) \
-									--enable-zchaff \
-									--with-zchaff-libdir=$(ZCHAFF) \
-									--with-zchaff-incdir=$(ZCHAFF)
-else
-	solvers_config= --enable-minisat \
-									--with-minisat-libdir=$(MINISAT) \
-									--with-minisat-incdir=$(MINISAT) 
+	solvers_config+= --enable-zchaff \
+				--with-zchaff-libdir=$(ZCHAFF) \
+				--with-zchaff-incdir=$(ZCHAFF) 
+endif
+ifeq ($(WITH_GLUCOSE), 1)
+	solvers_config+= --enable-glucose \
+				--with-glucose-libdir=$(GLUCOSE) \
+				--with-glucose-incdir=$(GLUCOSE)
 endif
 
 # This target goes through all the steps required to compile NuSMV.
