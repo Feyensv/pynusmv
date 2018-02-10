@@ -6,7 +6,7 @@
 '''
 # This script helps to decide whether or not the underlying version of NuSMV
 # should be rebuilt. In particular, it is used to decide whether or not you 
-# have chosent to build and link ZCHAFF and recompile the dependencies according
+# have chosen to build and link ZCHAFF and recompile the dependencies according
 # to your choice.
 #
 # .. note::
