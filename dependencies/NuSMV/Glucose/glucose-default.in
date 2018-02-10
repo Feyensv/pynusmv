@@ -1,0 +1,19 @@
+#! /bin/sh
+
+# ----------------------------------------------------------------------
+# Glucose settings for NuSMV
+# ----------------------------------------------------------------------
+
+# Version 4.1
+glucose_ver=4.1
+glucose_tgz=glucose-syrup-${glucose_ver}.tgz
+glucose_url=http://www.labri.fr/perso/lsimon/downloads/softwares/${glucose_tgz}
+glucose_dir=glucose-syrup-${glucose_ver}
+
+# ----------------------------------------------------------------------
+#minisat_patch=MiniSat_v${minisat_ver}_nusmv.patch
+glucose_link=Glucose_v${glucose_ver}
+glucose_libname=Glucose
+glucose_ifcname=Solver_C.h
+
+#patched_tag=patched_${minisat_ver}
