@@ -1,7 +1,7 @@
 diff -Naur glucose-syrup-4.1/simp/Solver_C.C glucose/simp/Solver_C.C
 --- glucose-syrup-4.1/simp/Solver_C.C	1970-01-01 01:00:00.000000000 +0100
-+++ glucose/simp/Solver_C.C	2017-12-12 12:13:27.440000000 +0100
-@@ -0,0 +1,71 @@
++++ glucose/simp/Solver_C.C	2018-02-10 13:52:35.885525000 +0100
+@@ -0,0 +1,145 @@
 +/*
 + *
 + * Wrapper for simp/Solver.cc
@@ -10,7 +10,7 @@ diff -Naur glucose-syrup-4.1/simp/Solver_C.C glucose/simp/Solver_C.C
 +
 +#include "SimpSolver.h"
 +extern "C" {
-+    #include "../core/Solver_C.h"
++    #include "Solver_C.h"
 +}
 +
 +extern "C" Glucose_ptr Glucose_Create()
@@ -31,6 +31,18 @@ diff -Naur glucose-syrup-4.1/simp/Solver_C.C glucose/simp/Solver_C.C
 +    return 0;
 +}
 +
++extern "C" int Glucose_Nof_Variables(Glucose_ptr ms){
++    return ((SimpSolver *)ms)->nVars();
++}
++
++extern "C" int Glucose_Nof_Clauses(Glucose_ptr ms){
++    return ((SimpSolver *)ms)->nClauses();
++}
++
++extern "C" int Glucose_New_Variable(Glucose_ptr ms){
++    return ((SimpSolver *)ms)->newVar();//+1?
++}
++
 +extern "C" int Glucose_addClause(Glucose_ptr ms, int *clause_lits, int nof_lits)
 +{
 +    int i;
@@ -49,7 +61,7 @@ diff -Naur glucose-syrup-4.1/simp/Solver_C.C glucose/simp/Solver_C.C
 +    return 0;
 +}
 +
-+extern "C" int Glucose_Solve_Assuming(Glucose_ptr ms,
++extern "C" int Glucose_Solve_Assume(Glucose_ptr ms,
 +                                      int nof_assumed_lits,
 +                                      int *assumed_lits)
 +{
@@ -71,12 +83,74 @@ diff -Naur glucose-syrup-4.1/simp/Solver_C.C glucose/simp/Solver_C.C
 +    return 0;
 +}
 +
-+//extern "C" Glucose_Model(Glucose_ptr ms)
-+//TODO lbool dependent of glucose or universal type?
++extern "C" Glucose_simplifyDB(Glucose_ptr ms)
++{
++    ((SimpSolver *)ms->simplify();
++    if(((SimpSolver *)ms)->okay()
++        return 1;
++    return 0;
++}
++
++extern "C" int Glucose_Get_Value(Glucose_ptr ms, int var_num)
++{
++    assert(var_num > 0);
++    if(var_num > Glucose_Nof_Variables(ms))
++        return -1;
++    assert(((SimpSolver *)ms)->model[var_num-1] != l_Undef);
++
++    if(((SimpSolver *)ms)->model[var_num-1] == l_True)
++        return 1;
++    return 0;
++}
++
++extern "C" int Glucose_Get_Nof_Conflict_Lits(Glucose_ptr ms)
++{
++    assert(((SimpSolver*)0) != ((SimpSolver*)ms));
++    SimpSolver& solver = *((SimpSolver*)ms);
++
++    return solver.conflict.size();
++}
++
++extern "C" void Glucose_Get_Conflict_Lits(Glucose_ptr ms, int* conflict_lits)
++{
++    assert(((SimpSolver*)0) != ((SimpSolver*)ms));
++    SimpSolver& solver = *((SimpSolver*)ms);
++
++    vec<Lit>& cf = solver.conflict;
++
++    for (int i = 0; i < cf.size(); i++) {
++        int v = var(~cf[i]);
++        int s = sign(~cf[i]);
++        assert(v != var_Undef);
++        conflict_lits[i] = (s == 0) ? (v+1) : -(v+1);
++    }
++}
++
++/** mode can be  polarity_true, polarity_false, polarity_user, polarity_rnd */
++extern "C" void Glucose_Set_Polarity_Mode(Glucose_ptr ms, int mode)
++{
++    assert(((SimpSolver*)0) != ((SimpSolver*)ms));
++    SimpSolver& solver = *((SimpSolver*)ms);
++    solver.polarity_mode = mode;
++}
++
++extern "C" int Glucose_Get_Polarity_Mode(Glucose_ptr ms)
++{
++    assert(((SimpSolver*)0) != ((SimpSolver*)ms));
++    SimpSolver& solver = *((SimpSolver*)ms);
++    return solver.polarity_mode;
++}
++
++extern "C" void Glucose_Set_Random_Seed(Glucose_ptr ms, double seed)
++{
++    SimpSolver& solver = *((SimpSolver*)ms);
++    solver.setRandomSeed(seed);
++}
++
 diff -Naur glucose-syrup-4.1/core/Solver_C.C glucose/core/Solver_C.C
 --- glucose-syrup-4.1/core/Solver_C.C	1970-01-01 01:00:00.000000000 +0100
-+++ glucose/core/Solver_C.C	2017-12-12 12:13:27.456000000 +0100
-@@ -0,0 +1,71 @@
++++ glucose/core/Solver_C.C	2018-02-10 13:57:19.175100000 +0100
+@@ -0,0 +1,145 @@
 +/*
 + *
 + * Wrapper for core/Solver.cc
@@ -90,7 +164,7 @@ diff -Naur glucose-syrup-4.1/core/Solver_C.C glucose/core/Solver_C.C
 +
 +extern "C" Glucose_ptr Glucose_Create()
 +{
-+    return (Glucose_ptr) new SimpSolver();
++    return (Glucose_ptr) new Solver();
 +}
 +
 +extern "C" void Glucose_Delete(Glucose_ptr ms){
@@ -104,6 +178,18 @@ diff -Naur glucose-syrup-4.1/core/Solver_C.C glucose/core/Solver_C.C
 +        return 1;
 +    }
 +    return 0;
++}
++
++extern "C" int Glucose_Nof_Variables(Glucose_ptr ms){
++    return ((Solver *)ms)->nVars();
++}
++
++extern "C" int Glucose_Nof_Clauses(Glucose_ptr ms){
++    return ((Solver *)ms)->nClauses();
++}
++
++extern "C" int Glucose_New_Variable(Glucose_ptr ms){
++    return ((Solver *)ms)->newVar();//+1?
 +}
 +
 +extern "C" int Glucose_addClause(Glucose_ptr ms, int *clause_lits, int nof_lits)
@@ -124,7 +210,7 @@ diff -Naur glucose-syrup-4.1/core/Solver_C.C glucose/core/Solver_C.C
 +    return 0;
 +}
 +
-+extern "C" int Glucose_Solve_Assuming(Glucose_ptr ms,
++extern "C" int Glucose_Solve_Assume(Glucose_ptr ms,
 +                                      int nof_assumed_lits,
 +                                      int *assumed_lits)
 +{
@@ -146,32 +232,74 @@ diff -Naur glucose-syrup-4.1/core/Solver_C.C glucose/core/Solver_C.C
 +    return 0;
 +}
 +
-+//extern "C" Glucose_Model(Glucose_ptr ms)
-+//TODO lbool dependent of glucose or universal type?
-diff -Naur glucose-syrup-4.1/core/Solver_C.h glucose/core/Solver_C.h
---- glucose-syrup-4.1/core/Solver_C.h	1970-01-01 01:00:00.000000000 +0100
-+++ glucose/core/Solver_C.h	2017-12-12 11:59:30.008000000 +0100
-@@ -0,0 +1,16 @@
-+/*
-+ * Wrapper for Solver.h
-+ */
-+#ifndef PYNUSMV_SOLVER_C_H
-+#define PYNUSMV_SOLVER_C_H
++extern "C" Glucose_simplifyDB(Glucose_ptr ms)
++{
++    ((Solver *)ms->simplify();
++    if(((Solver *)ms)->okay()
++        return 1;
++    return 0;
++}
 +
-+#define Glucose_ptr void *
++extern "C" int Glucose_Get_Value(Glucose_ptr ms, int var_num)
++{
++    assert(var_num > 0);
++    if(var_num > Glucose_Nof_Variables(ms))
++        return -1;
++    assert(((Solver *)ms)->model[var_num-1] != l_Undef);
 +
-+Glucose_ptr Glucose_create();
-+void Glucose_Delete(Glucose_ptr);
-+int Glucose_Add_Clause(Glucose_ptr, int *clause_lits, int nof_lits);
-+int Glucose_Solve(Glucose_ptr);
-+int Glucose_Solve_Assuming(Glucose_ptr, int nof_assumed_lits, int *assumed_lits);
++    if(((Solver *)ms)->model[var_num-1] == l_True)
++        return 1;
++    return 0;
++}
 +
-+//TODO if other functions needed
-+#endif //PYNUSMV_SOLVER_C_H
++extern "C" int Glucose_Get_Nof_Conflict_Lits(Glucose_ptr ms)
++{
++    assert(((Solver*)0) != ((Solver*)ms));
++    Solver& solver = *((Solver*)ms);
++
++    return solver.conflict.size();
++}
++
++extern "C" void Glucose_Get_Conflict_Lits(Glucose_ptr ms, int* conflict_lits)
++{
++    assert(((Solver*)0) != ((Solver*)ms));
++    Solver& solver = *((Solver*)ms);
++
++    vec<Lit>& cf = solver.conflict;
++
++    for (int i = 0; i < cf.size(); i++) {
++        int v = var(~cf[i]);
++        int s = sign(~cf[i]);
++        assert(v != var_Undef);
++        conflict_lits[i] = (s == 0) ? (v+1) : -(v+1);
++    }
++}
++
++/** mode can be  polarity_true, polarity_false, polarity_user, polarity_rnd */
++extern "C" void Glucose_Set_Polarity_Mode(Glucose_ptr ms, int mode)
++{
++    assert(((Solver*)0) != ((Solver*)ms));
++    Solver& solver = *((Solver*)ms);
++    solver.polarity_mode = mode;
++}
++
++extern "C" int Glucose_Get_Polarity_Mode(Glucose_ptr ms)
++{
++    assert(((Solver*)0) != ((Solver*)ms));
++    Solver& solver = *((Solver*)ms);
++    return solver.polarity_mode;
++}
++
++extern "C" void Glucose_Set_Random_Seed(Glucose_ptr ms, double seed)
++{
++    Solver& solver = *((Solver*)ms);
++    solver.setRandomSeed(seed);
++}
++
 diff -Naur glucose-syrup-4.1/simp/Solver_C.h glucose/simp/Solver_C.h
 --- glucose-syrup-4.1/simp/Solver_C.h	1970-01-01 01:00:00.000000000 +0100
-+++ glucose/simp/Solver_C.h	2018-01-02 12:13:15.000000000 +0100
-@@ -0,0 +1,16 @@
++++ glucose/simp/Solver_C.h	2018-02-10 13:15:35.595935000 +0100
+@@ -0,0 +1,27 @@
 +/*
 + * Wrapper for Solver.h
 + */
@@ -182,11 +310,53 @@ diff -Naur glucose-syrup-4.1/simp/Solver_C.h glucose/simp/Solver_C.h
 +
 +Glucose_ptr Glucose_create();
 +void Glucose_Delete(Glucose_ptr);
++int Glucose_Nof_Variables(Glucose_ptr);
++int Glucose_Nof_Clauses(Glucose_ptr);
++int Glucose_New_Variable(Glucose_ptr);
 +int Glucose_Add_Clause(Glucose_ptr, int *clause_lits, int nof_lits);
 +int Glucose_Solve(Glucose_ptr);
-+int Glucose_Solve_Assuming(Glucose_ptr, int nof_assumed_lits, int *assumed_lits);
++int Glucose_Solve_Assume(Glucose_ptr, int nof_assumed_lits, int *assumed_lits);
++int Glucose_simplifyDB(Glucose_ptr);
++int Glucose_Get_Value(Glucose_ptr, int var_num);
++int Glucose_Get_Nof_Conflict_Lits(Glucose_ptr ms);
++void MiniSat_Get_Conflict_Lits(Glucose_ptr ms, int* conflict_lits);
 +
-+//TODO if other functions needed
++void Glucose_Set_Polarity_Mode(Glucose_ptr ms, int mode);
++int Glucose_Get_Polarity_Mode(Glucose_ptr ms);
++void Glucose_Set_Random_Seed(Glucose_ptr ms, double seed);
++
++//PREFERRED VARIABLES UNUSED BY PYNUSMV
++#endif //PYNUSMV_SOLVER_C_H
+diff -Naur glucose-syrup-4.1/core/Solver_C.h glucose/core/Solver_C.h
+--- glucose-syrup-4.1/core/Solver_C.h	1970-01-01 01:00:00.000000000 +0100
++++ glucose/core/Solver_C.h	2018-02-10 13:15:35.595935000 +0100
+@@ -0,0 +1,27 @@
++/*
++ * Wrapper for Solver.h
++ */
++#ifndef PYNUSMV_SOLVER_C_H
++#define PYNUSMV_SOLVER_C_H
++
++#define Glucose_ptr void *
++
++Glucose_ptr Glucose_create();
++void Glucose_Delete(Glucose_ptr);
++int Glucose_Nof_Variables(Glucose_ptr);
++int Glucose_Nof_Clauses(Glucose_ptr);
++int Glucose_New_Variable(Glucose_ptr);
++int Glucose_Add_Clause(Glucose_ptr, int *clause_lits, int nof_lits);
++int Glucose_Solve(Glucose_ptr);
++int Glucose_Solve_Assume(Glucose_ptr, int nof_assumed_lits, int *assumed_lits);
++int Glucose_simplifyDB(Glucose_ptr);
++int Glucose_Get_Value(Glucose_ptr, int var_num);
++int Glucose_Get_Nof_Conflict_Lits(Glucose_ptr ms);
++void MiniSat_Get_Conflict_Lits(Glucose_ptr ms, int* conflict_lits);
++
++void Glucose_Set_Polarity_Mode(Glucose_ptr ms, int mode);
++int Glucose_Get_Polarity_Mode(Glucose_ptr ms);
++void Glucose_Set_Random_Seed(Glucose_ptr ms, double seed);
++
++//PREFERRED VARIABLES UNUSED BY PYNUSMV
 +#endif //PYNUSMV_SOLVER_C_H
 diff -Naur glucose-syrup-4.1/Makefile glucose/Makefile
 --- glucose-syrup-4.1/Makefile	1970-01-01 01:00:00.000000000 +0100

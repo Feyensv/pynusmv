@@ -26,8 +26,8 @@ glucose.unpacked:
 
 # patch glucose source code
 glucose.patched: glucose.unpacked
-	#patch -p0 -N < glucose.patch
-	patch -p0 -N < glucose_wrappers.patch #TODO only half of the wrappers are in this patch file (b.e. simp/Solver_C.h needed for the link to a lib).
+	patch -p0 -N < solver.patch #Random seed functionality for NUSMV
+	patch -p0 -N < glucose_wrappers.patch #C wrappers + Glucose Makefile
 	# patch -p0 -N < nusmv.patch #depends.mk patch, seems unnecessary, to verify later
     # Patch the makefiles to produce position independent code
     # This is necessary to create a sharedlib containing the minisat symbols
@@ -36,5 +36,5 @@ glucose.patched: glucose.unpacked
 
 # This target proceeds to the build (proper) of the glucose codebase
 glucose.built: glucose.patched
-	make -C glucose-syrup-4.1 #TODO add parallel if needed
+	make -C glucose-syrup-4.1
 	
