@@ -37,7 +37,7 @@ INSTALL_REQUIRES = ['pyparsing']
 # 1. Parse the global configuration options (which are not recognised by setup)
 parser   = argparse.ArgumentParser()
 parser.add_argument("--with-zchaff", action="store_true", help="build zchaff and link pynusmv against it")
-#TODO parser.add_argument("--with-glucose", action="store_true", help="build glucose to enable its use in pynusmv")
+parser.add_argument("--with-glucose", action="store_true", help="build glucose to enable its use in pynusmv")
 args,unk = parser.parse_known_args()
 
 # 2. reset sys.argv for further processing by the setup script
@@ -45,6 +45,7 @@ sys.argv = [sys.argv[0]] + unk
 
 # 3. process the global options
 os.environ['WITH_ZCHAFF'] = "1" if args.with_zchaff else "0"
+os.environ['WITH_GLUCOSE'] = "1" if args.with_glucose else "0"
 
 # 4. Require requests installation when zchaff option is enabled
 if args.with_zchaff:
@@ -424,6 +425,7 @@ class BuildExtWithDeps(build_ext):
             .require('.a', "dependencies/NuSMV/NuSMV-2.5.4/cudd-2.4.1.1")\
             .require('.a', "dependencies/MiniSat/minisat")\
             .require('.a', "dependencies/ZChaff/zchaff64")\
+	    .require('.a', "dependencies/Glucose/glucose-syrup-4.1")\
             .build()
 
         print("Copying the result in {}".format(LIB_FOLDER))
@@ -954,13 +956,6 @@ EXTENSIONS = [
         **dict(
             {'sources':['pynusmv_lower_interface/nusmv/sat/sat.i']},
             **EXTENSION_ARGS)),
-
-    #TODO glucose
-    #Extension(
-    #    'pynusmv_lower_interface.glucose',
-    #   **dict(
-    #        {'sources':['pynusmv_lower_interface/glucose/glucose.i']},
-    #       **EXTENSION_ARGS)),
 
     # set module
     Extension(
