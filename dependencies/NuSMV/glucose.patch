@@ -1,0 +1,1030 @@
+diff -Naur NuSMV-2.5.4/nusmv/configure.ac NuSMV-2.5.4/nusmv/patchedconfigure.ac 
+--- NuSMV-2.5.4/nusmv/configure.ac	2018-02-10 17:51:35.175588001 +0100
++++ NuSMV-2.5.4/nusmv/patchedconfigure.ac	2018-02-10 17:55:45.204540000 +0100
+@@ -191,6 +191,63 @@
+     enable_zchaff=yes
+ fi], [enable_zchaff=no])
+ 
++#Glucose configuration
++glucose_nusmv=$srcdir/../Glucose #TODO
++if [ test -f  $glucose_nusmv/glucose-default]; then
++. $glucose_nusmv/glucose-default
++else
++. $glucose_nusmv/glucose-default.in
++fi
++
++AC_SUBST(glucose_ver) #where is it defined?
++AC_SUBST(glucose_nusmv)
++#AC_SUBST(glucose_patch) #used?
++AC_SUBST(glucose_libname)
++AC_SUBST(glucose_ifcname) #used?
++glucosedefpath=$srcdir/../$glucose_link
++
++# Glucose library dir:
++AC_SUBST(glucoselibdir)
++AC_ARG_WITH(glucose-libdir,
++[  --with-glucose-libdir=<dir> The directory which the Glucose library
++	                  (lib$$glucose_libname.a) is contained in.
++			  Depends on --enable-glucose.],
++[ if [ test -x $withval ]; then
++    glucoselibdir=`cd $withval && pwd`
++  else
++    glucoselibdir=$withval
++  fi],
++[ if [ test -x $glucosedefpath ]; then
++    glucoselibdir=`cd $glucosedefpath && pwd`
++  else
++    glucoselibdir=$glucosedefpath
++  fi]
++)
++
++# Glucose include dir:
++AC_SUBST(glucoseincdir)
++AC_ARG_WITH(glucose-incdir,
++[  --with-glucose-incdir=<dir> The directory the interface files (Solver_C.h) is contained in.
++			  Depends on --enable-glucose],
++[ if [ test -x $withval ]; then
++    glucoseincdir=`cd $withval && pwd`
++  else
++    glucoseincdir=$withval
++  fi],
++[ if  [ test -x $glucosedefpath ]; then
++    glucoseincdir=`cd $glucosedefpath && pwd`
++  else
++    glucoseincdir=$glucosedefpath
++  fi]
++)
++
++# If Glucose must be linked:
++AC_ARG_ENABLE(glucose,
++  [  --enable-glucose  Makes the Glucose SAT solver usable from within NuSMV (default is yes)],
++  [if test "x$enableval" = "xyes"; then
++    enable_glucose=yes
++   fi], [enable_glucose=auto])
++#TODO change to no when testing is done
+ 
+ # MiniSat configuration (tries user-settings first)
+ minisat_nusmv=$srcdir/../MiniSat
+@@ -253,10 +310,10 @@
+    fi], [enable_minisat=auto])
+ 
+ #Glucose configuration
+-glucose_nusmv=$srcdir/../Glucose #TODO
++glucose_nusmv=$srcdir/../Glucose #TODO 
+ if [ test -f  $glucose_nusmv/glucose-default]; then
+ . $glucose_nusmv/glucose-default
+-else
++else 
+ . $glucose_nusmv/glucose-default.in
+ fi
+ 
+@@ -270,17 +327,17 @@
+ # Glucose library dir:
+ AC_SUBST(glucoselibdir)
+ AC_ARG_WITH(glucose-libdir,
+-[  --with-glucose-libdir=<dir> The directory which the Glucose library
+-	                  (lib$$glucose_libname.a) is contained in.
++[  --with-glucose-libdir=<dir> The directory which the Glucose library 
++	                  (lib$$glucose_libname.a) is contained in. 
+ 			  Depends on --enable-glucose.],
+ [ if [ test -x $withval ]; then
+     glucoselibdir=`cd $withval && pwd`
+-  else
++  else 
+     glucoselibdir=$withval
+-  fi],
++  fi], 
+ [ if [ test -x $glucosedefpath ]; then
+     glucoselibdir=`cd $glucosedefpath && pwd`
+-  else
++  else 
+     glucoselibdir=$glucosedefpath
+   fi]
+ )
+@@ -294,21 +351,21 @@
+     glucoseincdir=`cd $withval && pwd`
+   else
+     glucoseincdir=$withval
+-  fi],
+-[ if  [ test -x $glucosedefpath ]; then
++  fi], 
++[ if  [ test -x $glucosedefpath ]; then 
+     glucoseincdir=`cd $glucosedefpath && pwd`
+-  else
++  else 
+     glucoseincdir=$glucosedefpath
+   fi]
+ )
+ 
+ # If Glucose must be linked:
+ AC_ARG_ENABLE(glucose,
+-  [  --enable-glucose  Makes the Glucose SAT solver usable from within NuSMV (default is yes)],
+-  [if test "x$enableval" = "xyes"; then
++  [  --enable-glucose  Makes the Glucose SAT solver usable from within NuSMV (default is yes)], 
++  [if test "x$enableval" = "xyes"; then 
+     enable_glucose=yes
+    fi], [enable_glucose=auto])
+-#TODO change to no when testing is done
++#TODO change to no when testing is done 
+ 
+ excflags=""
+ AC_ARG_ENABLE(profiling,
+@@ -588,6 +645,40 @@
+ AC_SUBST(HAVE_ZCHAFF)
+ 
+ #Glucose header:
++if test "x$enable_glucose" = "xyes"; then 
++  if ! test -f $glucoseincdir/$glucose_ifcname; then
++      	AC_MSG_ERROR(Header file "$glucose_ifcname" has not been found in "$glucoseincdir".
++See configure option --with-glucose-incdir to specify where the header file is located.)
++  fi
++fi
++
++# Glucose library
++# Q : are the LIBS necessary?
++ac_have_glucose=no
++if test "x$enable_glucose" = "xyes"; then 
++LIBS=$LIBS_old
++AC_CHECK_LIB([$glucose_libname], [Glucose_Create],\
++        [ac_have_glucose=yes], \
++	[AC_MSG_ERROR($glucose_libname library not found in $glucoselibdir
++The library  location can be specified with the option --with-glucose-libdir=<dir>.)],\
++	[-L$glucoselibdir -lstdc++])
++LIBS=$LIBS_old
++fi
++
++
++AM_CONDITIONAL(HAVE_GLUCOSE, test "x$ac_have_glucose" = "xyes")
++if test "x$ac_have_glucose" = "xyes"; then 
++   AC_DEFINE(HAVE_SOLVER_GLUCOSE, 1, Enables Glucose)
++   glucose_libs="-L$glucoselibdir -l$glucose_libname  -lstdc++"
++else
++   AC_DEFINE(HAVE_SOLVER_GLUCOSE, 0, Disables Glucose)
++   glucose_libs=
++fi
++
++AC_SUBST(glucose_libs)
++AC_SUBST(HAVE_GLUCOSE)
++
++#Glucose header:
+ if test "x$enable_glucose" = "xyes"; then
+   if ! test -f $glucoseincdir/$glucose_ifcname; then
+       	AC_MSG_ERROR(Header file "$glucose_ifcname" has not been found in "$glucoseincdir".
+@@ -1020,6 +1111,18 @@
+ echo "For further help, try \"./configure --help\"."
+ fi
+ echo ------------------------------------------------------------------ 
++echo
++
++echo ------------------------------------------------------------------ 
++if test "x$ac_have_glucose" = "xyes"; then 
++echo "Glucose v.$glucose_ver will be embedded into the NuSMV executable."
++else 
++echo "The Glucose sat solver will NOT be linked to NuSMV."
++echo "If you want to link it, please use configure options"
++echo "--enable-glucose, --with-glucose-libdir, --with-glucose-incdir."
++echo "For further help, try \"./configure --help\"."
++fi
++echo ------------------------------------------------------------------ 
+ echo
+ 
+ if  [ test "x$ac_have_minisat" = "xno" ] && [ test "x$ac_have_zchaff" = "xno" ]; then
+diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile.am NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile2.am
+--- NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile.am	2011-10-12 11:04:36.000000000 +0200
++++ NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile2.am	2018-02-10 18:32:49.276020000 +0100
+@@ -60,15 +60,25 @@
+ MINISAT_EXTRA_DIST = SatMinisat.h SatMinisat_private.h SatMinisat.c
+ endif
+
+-EXTRA_DIST=$(ZCHAFF_EXTRA_DIST) $(MINISAT_EXTRA_DIST)
++if HAVE_GLUCOSE
++GLUCOSE_SRC = SatGlucose.h SatGlucose_private.h SatGlucose.c
++GLUCOSE_BUILT_SOURCES = satGlucoseIfc.h
++GLUCOSE_EXTRA_DIST =
++else
++GLUCOSE_SRC =
++GLUCOSE_BUILT_SOURCES =
++GLUCOSE_EXTRA_DIST = SatGlucose.h SatGlucose_private.h SatGlucose.c
++endif
++
++EXTRA_DIST = $(ZCHAFF_EXTRA_DIST) $(MINISAT_EXTRA_DIST) $(GLUCOSE_EXTRA_DIST)
+
+
+-BUILT_SOURCES = $(ZCHAFF_BUILT_SOURCES) $(MINISAT_BUILT_SOURCES)
++BUILT_SOURCES = $(ZCHAFF_BUILT_SOURCES) $(MINISAT_BUILT_SOURCES) $(GLUCOSE_BUILT_SOURCES)
+
+-PKG_SOURCES = $(ZCHAFF_SRC) $(MINISAT_SRC)
++PKG_SOURCES = $(ZCHAFF_SRC) $(MINISAT_SRC) $(GLUCOSE_SRC)
+
+ satsolversdir = $(includedir)/nusmv/sat/solvers
+-satsolvers_HEADERS = SatZchaff.h SatMinisat.h
++satsolvers_HEADERS = SatZchaff.h SatMinisat.h SatGlucose.h
+
+
+ # -------------------------------------------------------
+@@ -89,3 +99,7 @@
+ # Generation of C interface from Solver_C.h (minisat) - if needed
+ satMiniSatIfc.h : $(minisatincdir)/$(minisat_ifcname) $(top_builddir)/nusmv-config.h
+ 	cp $(minisatincdir)/$(minisat_ifcname)  $@
++
++# Generation of C interface from Solver_C.h (glucose) - if needed
++satGlucoseIfc.h : $(glucoseincdir)/$(glucose_ifcname) $(top_builddir)/nusmv-config.h
++	cp $(glucoseincdir)/$(glucose_ifcname)  $@
+diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose.c
+--- NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c	1970-01-01 01:00:00.000000000 +0100
++++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose.c	2018-02-10 18:03:43.939788000 +0100
+@@ -0,0 +1,612 @@
++//
++// Created by ritsu on 15/01/18.
++//
++
++#include "SatGlucose_private.h"
++#include "utils/error.h"
++
++static void sat_glucose_finalise ARGS((Object_ptr object, void *dummy));
++static int _get_clause_size ARGS((const int *clause));
++
++SatGlucose_ptr SatGlucose_create(const char* name, boolean enable_proof_logging)
++{
++    SatGlucose_ptr self = ALLOC(SatGlucose, 1);
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    sat_glucose_init(self, name, enable_proof_logging);
++    return self;
++}
++
++void SatGlucose_destroy(SatGlucose_ptr self)
++{
++    SatSolver_destroy(SAT_SOLVER(self));
++}
++
++int sat_glucose_cnfLiteral2glucoseLiteral(SatGlucose_ptr self, int cnfLiteral)
++{
++    int cnfVar = abs(cnfLiteral);
++    int glucoseVar;
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++    nusmv_assert(cnfVar > 0);
++
++    glucoseVar = NODE_TO_INT(find_assoc(self->cnfVar2glucoseVar,
++                                        NODE_FROM_INT(cnfVar)));
++
++    if (0 == glucoseVar) {
++        /* create a new internal var and associate with cnf */
++        glucoseVar = Glucose_New_Variable(self->glucoseSolver);
++
++        insert_assoc(self->cnfVar2glucoseVar,
++                     NODE_FROM_INT(cnfVar), NODE_FROM_INT(glucoseVar));
++
++        insert_assoc(self->glucoseVar2cnfVar,
++                     NODE_FROM_INT(glucoseVar), NODE_FROM_INT(cnfVar));
++    }
++
++    return cnfLiteral > 0 ? glucoseVar : - glucoseVar;
++}
++
++int sat_glucose_glucoseLiteral2cnfLiteral(SatGlucose_ptr self, int glucoseLiteral)
++{
++    int glucoseVar = abs(glucoseLiteral);
++    int cnfVar = NODE_TO_INT(find_assoc(self->glucoseVar2cnfVar,
++                                        NODE_FROM_INT(glucoseVar)));
++
++#if 0
++    We cannot check that cnfVar != Nil, since some internal variables
++  can be used as group id-s.
++  We cannnot check that internal variable is a group id, because
++  some groups may be deleted and their id-s are removed from the list
++  'existing group'.
++
++  /* cnf var is Nill only if the corresponding internal var represents
++     a group id, otherwise is always greater then 0 */
++  nusmv_assert( ((int) Nil != cnfVar) ||
++                sat_solver_BelongToList(SAT_SOLVER(self)->existingGroups,
++                                        (lsGeneric)glucoseVar) );
++#endif
++
++    return glucoseLiteral > 0 ? cnfVar : - cnfVar;
++}
++
++void sat_glucose_add(const SatSolver_ptr solver,
++                     const Be_Cnf_ptr cnfProb,
++                     SatSolverGroup group)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++
++    int * clause = (int *)NULL;
++    Siter genClause;
++    int* glucoseClause;
++
++    /* just for efficiency */
++    const int groupIsNotPermanent =
++            SatSolver_get_permanent_group(SAT_SOLVER(self)) != group;
++
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    glucoseClause = sat_glucose_get_glucoseClause(self);
++
++    SLIST_FOREACH (Be_Cnf_GetClausesList(cnfProb), genClause) {
++        clause = (int*) Siter_element(genClause);
++
++        int literal, i;
++        int clause_size = _get_clause_size(clause);
++        int literalNumber = 0;
++
++        if (sat_glucose_get_glucoseClauseSize(self) - 4 <= clause_size) {
++            sat_glucose_enlarge_glucoseClause(self, clause_size + 5);
++            glucoseClause = sat_glucose_get_glucoseClause(self);
++        }
++        i = 0;
++        while (clause[i] != 0) {
++            literal = clause[i];
++            glucoseClause[literalNumber]
++                    = sat_glucose_cnfLiteral2glucoseLiteral(self, literal);
++            ++literalNumber;
++            i++;
++        }
++
++        if (groupIsNotPermanent) { /* add group id to the clause */
++            glucoseClause[literalNumber] = group;
++            ++literalNumber;
++        }
++//#ifdef MINISAT_WITH_PROOF_LOGGING
++        /* add to real minisat */
++//    MiniSat_Add_Clause(self->minisatSolver, minisatClause,
++//                       literalNumber, SatSolver_curr_itp_group(solver));
++//#else
++        Glucose_Add_Clause(self->glucoseSolver, glucoseClause,
++                           literalNumber);
++//#endif
++        /* with the new interface of minisat there is not reason to remember
++           that an unsatisfiable clause has been added to the solver */
++
++    } /* while() */
++}
++
++void sat_glucose_set_polarity(const SatSolver_ptr solver,
++                              const Be_Cnf_ptr cnfProb,
++                              int polarity,
++                              SatSolverGroup group)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++
++    int cnfLiteral;
++    int glucoseLiteral;
++    int glucoseClause[5]; /* only one or two literals may be in the clause */
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    if (Be_Cnf_GetFormulaLiteral(cnfProb) == INT_MAX) {
++        /* special case, we have added the constant false */
++        nusmv_assert(SAT_SOLVER(self)->interpolation);
++
++        /* check that we are actually adding the constant false
++           (see SatSolver.c, SatSolver_set_polarity) */
++        nusmv_assert(
++                (Slist_get_size(Be_Cnf_GetClausesList(cnfProb)) == 0 ? 1 : -1) *
++                polarity != 1);
++
++        if (group == SatSolver_get_permanent_group(SAT_SOLVER(self))) {
++            glucoseClause[0] = group;
++//#ifdef MINISAT_WITH_PROOF_LOGGING
++//            MiniSat_Add_Clause(self->minisatSolver, minisatClause, 1,
++//                         SatSolver_curr_itp_group(solver));
++//#else
++            Glucose_Add_Clause(self->glucoseSolver, glucoseClause, 1);
++//#endif
++        } else {
++            /* add empty clause */
++//#ifdef MINISAT_WITH_PROOF_LOGGING
++//            MiniSat_Add_Clause(self->minisatSolver, minisatClause, 0,
++//                         SatSolver_curr_itp_group(solver));
++//#else
++            Glucose_Add_Clause(self->glucoseSolver, glucoseClause, 0);
++//#endif
++        }
++
++        return;
++    }
++
++    cnfLiteral = polarity * Be_Cnf_GetFormulaLiteral(cnfProb);
++    glucoseLiteral = sat_glucose_cnfLiteral2glucoseLiteral ( self,
++                                                             cnfLiteral);
++    glucoseClause[0] = glucoseLiteral;
++
++    if ( SatSolver_get_permanent_group(SAT_SOLVER(self)) == group ) {
++//#ifdef MINISAT_WITH_PROOF_LOGGING
++//        Glucose_Add_Clause(self->minisatSolver, minisatClause, 1,
++//                       SatSolver_curr_itp_group(solver));
++//#else
++        Glucose_Add_Clause(self->glucoseSolver, glucoseClause, 1);
++//#endif
++    }
++    else { /* add group id to clause to controle the CNF formula */
++        glucoseClause[1] = group;
++//#ifdef MINISAT_WITH_PROOF_LOGGING
++//        MiniSat_Add_Clause(self->minisatSolver, minisatClause, 2,
++//                       SatSolver_curr_itp_group(solver));
++//#else
++        Glucose_Add_Clause(self->glucoseSolver, glucoseClause, 2);
++//#endif
++    }
++}
++
++/* NOT exposed in pynusmv
++ * void sat_glucose_set_preferred_variables(const SatSolver_ptr solver){
++ *
++ * }
++ * void sat_glucose_clear_preferred_variables(const SatSolver_ptr solver){
++ *
++}*/
++
++SatSolverResult sat_glucose_solve_all_groups(const SatSolver_ptr solver)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    return sat_glucose_solve_groups(SAT_INC_SOLVER(self),
++                                    SAT_SOLVER(self)->existingGroups);
++}
++
++/*  NOT exposed in pynusmv
++ * SatSolverResult
++sat_glucose_solve_permanent_group_assume(const SatSolver_ptr sol,
++                                         const Slist_ptr assumptions){}
++                                         */
++
++Slist_ptr sat_glucose_get_conflicts(const SatSolver_ptr solver)
++{
++
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    if ((Slist_ptr)NULL == self->conflict)
++    self->conflict = sat_glucose_make_conflicts(self);
++
++    return self->conflict;
++}
++
++Slist_ptr sat_glucose_make_model (const SatSolver_ptr solver)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++    int index;
++    Slist_ptr model;
++    int varNumber;
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++    /* a model is created only if there is no model */
++    nusmv_assert((Slist_ptr)NULL == SAT_SOLVER(self)->model);
++
++    model = Slist_create();
++    varNumber = Glucose_Nof_Variables(self->glucoseSolver);
++
++    for (index = 1; index <= varNumber; ++index) {
++        int cnfLiteral = sat_glucose_glucoseLiteral2cnfLiteral(self, index);
++
++        if (cnfLiteral > 0) { /* it is a real variable */
++            switch (Glucose_Get_Value(self->glucoseSolver, index)) {
++
++                case 0: /* negative polarity => change the polarity of CNF var */
++                    cnfLiteral = -cnfLiteral;
++                case 1:  /* positive polarity => do nothing */
++                    /* appends the model: */
++                    Slist_push(model, PTR_FROM_INT(void*, cnfLiteral));
++                    break;
++
++                case -1: break; /* does not store unassigned vars */
++                default:
++                    error_unreachable_code(); /* no other values should be provided */
++            }
++        }
++        else {   /* just debugging */
++            /*
++              We cannot check that cnfVar != Nil, since some internal variables
++              can be used as group id-s.
++              We cannnot check that internal variable is a group id, because
++              some groups may be deleted and their id-s are removed from the list
++              'existing group'.
++            */
++        }
++    } /* for() */
++
++    return model;
++}
++
++/* MP */
++int sat_glucose_get_cnf_var(const SatSolver_ptr solver, int var)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    return sat_glucose_glucoseLiteral2cnfLiteral(self, 1 + var);
++}
++
++SatSolverGroup
++sat_glucose_create_group(const SatIncSolver_ptr solver)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++    int newGroup;
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++    newGroup = Glucose_New_Variable(self->glucoseSolver);
++    Olist_append(SAT_SOLVER(self)->existingGroups,
++                 PTR_FROM_INT(void*, newGroup));
++    return newGroup;
++}
++
++void
++sat_glucose_destroy_group(const SatIncSolver_ptr solver, SatSolverGroup group)
++{
++    SatGlucose_ptr self = SAT_GLUCOSe(solver);
++    int glucoseClause[2];
++
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++    /* it should not be a permanent group */
++    nusmv_assert(SatSolver_get_permanent_group(SAT_SOLVER(self)) != group);
++    /* the group should exist */
++    nusmv_assert(Olist_contains(SAT_SOLVER(self)->existingGroups, (void*)group));
++
++    /* delete the group from the lists */
++    Olist_remove(SAT_SOLVER(self)->existingGroups, (void*)group);
++    Olist_remove(SAT_SOLVER(self)->unsatisfiableGroups, (void*)group);
++
++    /* add literal corresponding to group id to the solver (to
++       make all clauses contaning it true, so useless */
++    glucoseClause[0] = group;
++//#ifdef MINISAT_WITH_PROOF_LOGGING
++    //MiniSat_Add_Clause(self->minisatSolver, minisatClause, 1, 0);
++//#else
++    Glucose_Add_Clause(self->glucoseSolver, glucoseClause, 1);
++//#endif
++    /* with new minisat interface it is not necessary to check
++       the successfulness of adding a clause */
++}
++
++void
++sat_glucose_move_to_permanent_and_destroy_group(const SatIncSolver_ptr solver,
++                                                SatSolverGroup group)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++    int glucoseClause[2];
++    SatSolverGroup permamentGroup;
++
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    permamentGroup = SatSolver_get_permanent_group(SAT_SOLVER(self));
++
++    /* it should not be a permanent group */
++    nusmv_assert( permamentGroup != group);
++    /* the group should exist */
++    nusmv_assert(Olist_contains(SAT_SOLVER(self)->existingGroups,
++                                (void*)group));
++
++    /* if the group is unsatisfiable, make the permanent group unsatisfiable */
++    if (Olist_contains(SAT_SOLVER(self)->unsatisfiableGroups, (void*)group) &&
++        ! Olist_contains(SAT_SOLVER(self)->unsatisfiableGroups,
++                         (void*)permamentGroup) ) {
++        Olist_prepend(SAT_SOLVER(self)->unsatisfiableGroups, (void*)permamentGroup);
++    }
++
++    /* delete the group from the lists */
++    Olist_remove(SAT_SOLVER(self)->existingGroups,
++                 (void*)group);
++    Olist_remove(SAT_SOLVER(self)->unsatisfiableGroups,
++                 (void*)group);
++
++    /* add negated literal corresponding to group id to the solver (to
++       remove the group id literal from all the clauses belonding to the group */
++    glucoseClause[0] = -group;
++//#ifdef MINISAT_WITH_PROOF_LOGGING
++    //MiniSat_Add_Clause(self->minisatSolver, minisatClause, 1, 0);
++//#else
++    Glucose_Add_Clause(self->glucoseSolverSolver, glucoseClause, 1);
++//#endif
++    /* with new minisat interface it is not necessary to check
++       the successfulness of adding a clause */
++    Glucose_simplifyDB(self->glucoseSolver);
++}
++
++SatSolverResult
++sat_glucose_solve_groups(const SatIncSolver_ptr solver, const Olist_ptr groups)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++    SatSolverGroup permanentGroup;
++    int glucoseResult;
++    int* assumptions;
++    int numberOfGroups;
++    Oiter gen;
++    SatSolverGroup aGroup;
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    permanentGroup = SatSolver_get_permanent_group(SAT_SOLVER(self));
++
++    /* if the permanent group is unsatisfiable => return.
++     We check it here because the input list may not contain permanent group */
++    if (Olist_contains(SAT_SOLVER(self)->unsatisfiableGroups,
++                       (void*)permanentGroup)) {
++        return SAT_SOLVER_UNSATISFIABLE_PROBLEM;
++    }
++
++    numberOfGroups = Olist_get_size(groups);
++    nusmv_assert( numberOfGroups>= 0 );
++    assumptions = ALLOC(int, numberOfGroups);
++
++    numberOfGroups = 0;
++    OLIST_FOREACH(groups, gen) {
++        aGroup = (SatSolverGroup) Oiter_element(gen);
++
++        /* the group existins */
++        nusmv_assert(Olist_contains(SAT_SOLVER(self)->existingGroups,
++                                    (void*)aGroup));
++
++        /* the group is unsatisfiable => exit */
++        if (Olist_contains(SAT_SOLVER(self)->unsatisfiableGroups,
++                           (void*)aGroup)) {
++            FREE(assumptions);
++            return SAT_SOLVER_UNSATISFIABLE_PROBLEM;
++        }
++
++        /* add negated literal of group id to the assumptions (if this is not
++           a permanent group) */
++        if (permanentGroup != aGroup) {
++            assumptions[numberOfGroups] = -aGroup;
++            ++numberOfGroups;
++        }
++    }
++
++    /* try to solver (MiniSat_Solve will invoke internal simplifyDB) */
++
++    glucoseResult = Glucose_Solve_Assume(self->glucoseSolver,
++                                         numberOfGroups, assumptions);
++    FREE(assumptions);
++    if (1 == glucoseResult) {
++        return SAT_SOLVER_SATISFIABLE_PROBLEM;
++    }
++    else
++        return SAT_SOLVER_UNSATISFIABLE_PROBLEM;
++}
++
++SatSolverResult
++sat_glucose_solve_without_groups(const SatIncSolver_ptr solver,
++                                 const Olist_ptr groups)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++
++    SatSolverResult result;
++    Olist_ptr includeGroups;
++    Oiter gen;
++    SatSolverGroup aGroup;
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++    nusmv_assert(!Olist_contains(groups,
++                                 (void*)SatSolver_get_permanent_group(SAT_SOLVER(self))));
++
++    /* create a list of all groups except the groups in the list */
++    includeGroups = Olist_create();
++    OLIST_FOREACH(SAT_SOLVER(self)->existingGroups, gen) {
++        aGroup = (SatSolverGroup) Oiter_element(gen);
++        if(!Olist_contains(groups, (void*)aGroup)) {
++            Olist_append(includeGroups, (void*)aGroup);
++        }
++    }
++
++    result = sat_glucose_solve_groups(solver, includeGroups);
++    Olist_destroy(includeGroups);
++
++    return result;
++}
++
++Slist_ptr sat_glucose_make_conflicts(const SatGlucose_ptr self)
++{
++    int index;
++    Slist_ptr conflict;
++    int litNumber;
++    int* lits;
++
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    nusmv_assert((Slist_ptr)NULL == self->conflict);
++
++    conflict = Slist_create();
++
++    litNumber = Glucose_Get_Nof_Conflict_Lits(self->glucoseSolver);
++    lits=ALLOC(int, litNumber);
++    nusmv_assert(NULL!=lits);
++    Glucose_Get_Conflict_Lits(self->glucoseSolver, lits);
++    for (index = 0; index<litNumber; index++)
++    {
++        int cnfLiteral = sat_glucose_glucoseLiteral2cnfLiteral(self, lits[index]);
++
++        Slist_push(conflict, PTR_FROM_INT(void*, cnfLiteral));
++    }
++    FREE(lits);
++
++    return conflict
++}
++
++void sat_glucose_set_random_mode(SatSolver_ptr solver, double seed)
++{
++    SatGlucose_ptr  self = SAT_GLUCOSE(solver);
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    if (seed == 0) {
++        sat_glucose_set_polarity_mode(solver, polarity_user);
++    }else {
++        Glucose_Set_Random_Seed(self->minisatSolver, seed);
++        sat_glucose_set_polarity_mode(solver, polarity_rnd);
++    }
++}
++
++void sat_glucose_set_polarity_mode(SatSolver_ptr solver, int mode)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    Glucose_Set_Polarity_Mode(self->glucoseSolver, mode);
++}
++
++int sat_glucose_get_polarity_mode(const SatSolver_ptr solver)
++{
++
++    const SatGlucose_ptr self = SAT_GLUCOSE(solver);
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    return Glucose_Get_Polarity_Mode(self->glucoseSolver);
++}
++
++void sat_glucose_init(SatGlucose_ptr self, const char* name,
++                      boolean enable_proof_logging) {//enable or disable proof logging available in glucose?
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    sat_inc_solver_init(SAT_INC_SOLVER(self), name);
++
++    OVERRIDE(Object, finalize) = sat_glucose_finalize;
++
++    OVERRIDE(SatSolver, add) = sat_glucose_add;
++    OVERRIDE(SatSolver, set_polarity) = sat_glucose_set_polarity;
++    // UNUSED BY PYNUSMV
++    //OVERRIDE(SatSolver, set_preferred_variables) =
++    //        sat_minisat_set_preferred_variables;
++    //OVERRIDE(SatSolver, clear_preferred_variables) =
++    //        sat_minisat_clear_preferred_variables;
++    OVERRIDE(SatSolver, solve_all_groups) = sat_glucose_solve_all_groups;
++
++    //AVOIDED BY PYNUSMV BECAUSE OF SEGFAULTS
++    //OVERRIDE(SatSolver, solve_all_groups_assume) =
++    //        sat_minisat_solve_permanent_group_assume;
++
++    OVERRIDE(SatSolver, make_model) = sat_glucose_make_model;
++    OVERRIDE(SatSolver, get_cnf_var) = sat_glucose_get_cnf_var;
++    OVERRIDE(SatSolver, get_conflicts) = sat_glucose_get_conflicts;
++
++    OVERRIDE(SatIncSolver, create_group) = sat_glucose_create_group;
++    OVERRIDE(SatIncSolver, destroy_group) = sat_glucose_destroy_group;
++    OVERRIDE(SatIncSolver, move_to_permanent_and_destroy_group)
++            = sat_glucose_move_to_permanent_and_destroy_group;
++    OVERRIDE(SatIncSolver, solve_groups) = sat_glucose_solve_groups;
++    OVERRIDE(SatIncSolver, solve_without_groups)
++            = sat_glucose_solve_without_groups;
++
++    OVERRIDE(SatSolver, set_random_mode) = sat_glucose_set_random_mode;
++    OVERRIDE(SatSolver, set_polarity_mode) = sat_glucose_set_polarity_mode;
++    OVERRIDE(SatSolver, get_polarity_mode) = sat_glucose_get_polarity_mode;
++
++//#ifdef GLUCOSE_WITH_PROOF_LOGGING
++    //UNUSED BY PYNUSMV because of lack of documentation in nusmv
++    //OVERRIDE(SatSolver, curr_itp_group) = sat_minisat_curr_itp_group;
++    //OVERRIDE(SatSolver, new_itp_group) = sat_minisat_new_itp_group;
++    //OVERRIDE(SatSolver, extract_interpolant) = sat_minisat_extract_interpolant;
++
++    //self->glucoseSolver = Glucose_Create(enable_proof_logging);
++//#else
++    self->glucoseSolver = Glucose_Create();
++//#endif
++
++    self->cnfVar2glucoseVar = new_assoc();
++    self->glucoseVar2cnfVar = new_assoc();
++
++    self->glucoseClauseSize = 10;//TODO still adapted?
++    self->glucoseClause = ALLOC(int, self->glucoseClauseSize);
++    nusmv_assert(self->glucoseClause != (int *) NULL);
++
++    //self->minisat_itp_group = 0;
++}
++
++void sat_glucose_deinit(SatGlucose_ptr self)
++{
++    SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++    FREE(self->glucoseClause);
++
++    free_assoc(self->cnfVar2glucoseVar);
++    free_assoc(self->glucoseVar2cnfVar);
++
++    Glucose_Delete(self->glucoseSolver);
++
++    sat_solver_deinit(SAT_SOLVER(self));
++}
++
++static void sat_glucose_finalize(Object_ptr object, void* dummy)
++{
++    SatGlucose_ptr self = SAT_GLUCOSE(object);
++    sat_glucose_deinit(self);
++    FREE(self);
++}
++
++static int _get_clause_size(cont int * clause){
++    int j=0;
++
++    if ((int *)NULL != clause) {
++        while (clause[j] != 0) j++;
++    }
++    return j;
++}
++
+diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.h NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose.h
+--- NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.h	1970-01-01 01:00:00.000000000 +0100
++++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose.h	2018-01-23 15:48:46.046642000 +0100
+@@ -0,0 +1,46 @@
++//
++// Created by ritsu on 15/01/18.
++//
++
++#ifndef PYNUSMV_SATGLUCOSE_H
++#define PYNUSMV_SATGLUCOSE_H
++
++#include "sat/SatIncSolver.h"
++
++/*---------------------------------------------------------------------------*/
++/* Constant declarations                                                     */
++/*---------------------------------------------------------------------------*/
++
++/*---------------------------------------------------------------------------*/
++/* Type declarations                                                         */
++/*---------------------------------------------------------------------------*/
++typedef struct SatGlucose_TAG* SatGlucose_ptr;
++
++/*---------------------------------------------------------------------------*/
++/* Variable declarations                                                     */
++/*---------------------------------------------------------------------------*/
++
++/*---------------------------------------------------------------------------*/
++/* Macro declarations                                                        */
++/*---------------------------------------------------------------------------*/
++#define SAT_GLUCOSE(x)                          \
++  ((SatGlucose_ptr) x)
++
++#define SAT_GLUCOSE_CHECK_INSTANCE(x)                   \
++  (nusmv_assert(SAT_GLUCOSE(x) != SAT_GLUCOSE(NULL)))
++
++/**AutomaticStart*************************************************************/
++
++/*---------------------------------------------------------------------------*/
++/* Function prototypes                                                       */
++/*---------------------------------------------------------------------------*/
++
++/* SatMinisat Constructor/Destructors */
++EXTERN SatGlucose_ptr SatGlucose_create ARGS((const char* name,
++                                              boolean enable_proof_logging));
++EXTERN void SatGlucose_destroy ARGS((SatGlucose_ptr self));
++
++/**AutomaticEnd***************************************************************/
++
++
++#endif //PYNUSMV_SATGLUCOSE_H
+diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/satGlucoseIfc.h NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/satGlucoseIfc.h
+--- NuSMV-2.5.4/nusmv/src/sat/solvers/satGlucoseIfc.h	1970-01-01 01:00:00.000000000 +0100
++++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/satGlucoseIfc.h	2018-02-10 11:14:05.048483000 +0100
+@@ -0,0 +1,16 @@
++/*
++ * Wrapper for Solver.h
++ */
++#ifndef PYNUSMV_SOLVER_C_H
++#define PYNUSMV_SOLVER_C_H
++
++#define Glucose_ptr void *
++
++Glucose_ptr Glucose_create();
++void Glucose_Delete(Glucose_ptr);
++int Glucose_Add_Clause(Glucose_ptr, int *clause_lits, int nof_lits);
++int Glucose_Solve(Glucose_ptr);
++int Glucose_Solve_Assuming(Glucose_ptr, int nof_assumed_lits, int *assumed_lits);
++
++//TODO keep up to date with Solver_C.h in glucose directory
++#endif //PYNUSMV_SOLVER_C_H
+diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose_private.h
+--- NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h	1970-01-01 01:00:00.000000000 +0100
++++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose_private.h	2018-01-23 21:29:39.869832000 +0100
+@@ -0,0 +1,108 @@
++//
++// Created by ritsu on 23/01/18.
++//
++
++#ifndef PYNUSMV_SATGLUCOSE_PRIVATE_H
++#define PYNUSMV_SATGLUCOSE_PRIVATE_H
++
++#include "SatGlucose.h"
++//ifc file needed?
++
++#include "sat/SatIncSolver_private.h"
++#include "utils/assoc.h"
++
++typedef struct SatGlucose_TAG
++{
++    INHERITS_FROM(SatIncSolver);
++
++    Glucose_ptr glucoseSolver; /* actual instance of glucose */
++    /* All input variables are represented by the  internal ones inside the
++       SatGlucose. Bellow two hash table perform the conversion in both ways */
++    hash_ptr cnfVar2minisatVar;/* converts CNF variable to internal variable */
++    hash_ptr minisatVar2cnfVar;/* converts internal variable into CNF variable */
++
++    /* contains set of conflicting assumptions after using
++       SatMinisat_solve_permanent_group_assume */
++    Slist_ptr conflict;
++
++    /* A clause and its current maximum length. This was added here in
++       order to replace a statically allocated, fixed-size array and
++       length indicator in sat_minisat_add. */
++    int* minisatClause;
++
++    unsigned int glucoseClauseSize;
++    unsigned int glucose_itp_group;
++} SatGlucose;
++
++/**AutomaticStart*************************************************************/
++
++/*---------------------------------------------------------------------------*/
++/* Function prototypes                                                       */
++/*---------------------------------------------------------------------------*/
++void sat_glucose_init ARGS((SatGlucose_ptr self, const char* name,
++        boolean enable_proof_logging));
++void sat_glucose_deinit ARGS((SatGlucose_ptr self));
++
++int sat_glucose_cnfLiteral2glucoseLiteral ARGS((SatGlucose_ptr self,
++int cnfLitaral));
++int sat_glucose_glucoseLiteral2cnfLiteral ARGS((SatGlucose_ptr self,
++int glucoseLiteral));
++
++/* virtual function from SatSolver */
++void sat_glucose_add ARGS((const SatSolver_ptr self,
++const Be_Cnf_ptr cnfProb,
++        SatSolverGroup group));
++
++void sat_glucose_set_polarity ARGS((const SatSolver_ptr self,
++                    const Be_Cnf_ptr cnfProb,
++                    int polarity,
++                    SatSolverGroup group));
++
++//void sat_glucose_set_preferred_variables ARGS((const SatSolver_ptr self, const Slist_ptr cnfVars));
++
++//void sat_glucose_clear_preferred_variables ARGS((const SatSolver_ptr self));
++
++SatSolverResult sat_glucose_solve_all_groups ARGS((const SatSolver_ptr self));
++
++SatSolverResult sat_glucose_solve_permanent_group_assume ARGS((const SatSolver_ptr self, Slist_ptr assumption));
++
++Slist_ptr sat_glucose_get_conflicts ARGS((const SatSolver_ptr));
++
++Slist_ptr sat_glucose_make_model ARGS((const SatSolver_ptr self));
++
++/* virtual functions from SatIncSolver */
++SatSolverGroup
++        sat_glucose_create_group ARGS((const SatIncSolver_ptr self));
++
++void
++        sat_glucose_destroy_group ARGS((const SatIncSolver_ptr self,
++        SatSolverGroup group));
++
++void
++        sat_glucose_move_to_permanent_and_destroy_group
++ARGS((const SatIncSolver_ptr self,
++        SatSolverGroup group));
++SatSolverResult
++        sat_glucose_solve_groups ARGS((const SatIncSolver_ptr self,
++const Olist_ptr groups));
++
++SatSolverResult
++        sat_glucose_solve_without_groups ARGS((const SatIncSolver_ptr self,
++const Olist_ptr groups));
++
++/* the assumptions/conflict interface of Glucose */
++Slist_ptr sat_glucose_make_conflicts ARGS((const SatGlucose_ptr self));
++
++int* sat_glucose_get_glucoseClause ARGS((const SatGlucose_ptr self));
++int sat_glucose_get_glucoseClauseSize ARGS((const SatGlucose_ptr self));
++void sat_glucose_enlarge_glucoseClause ARGS((const SatGlucose_ptr self,
++unsigned int minSize));
++
++/* polarity mode */
++void sat_glucose_set_random_mode ARGS((SatSolver_ptr self, double seed));
++void sat_glucose_set_polarity_mode ARGS((SatSolver_ptr self, int mode));
++int  sat_glucose_get_polarity_mode ARGS((const SatSolver_ptr self));
++
++
++/**AutomaticEnd***************************************************************/
++#endif //PYNUSMV_SATGLUCOSE_PRIVATE_H
