@@ -43,7 +43,7 @@ clean:
 	rm last_config.pickle
 	rm nusmv.unpacked
 	rm nusmv.patched
-	rm nusmv.configured
+	#rm nusmv.configured --> #never created
 	rm nusmv.built
 
 # This target just unpacks the archive containing nusmv
@@ -54,10 +54,10 @@ nusmv.unpacked:
 nusmv.patched: nusmv.unpacked
 	patch -p0 -N < pynusmv.patch
 	patch -p0 -N < cudd.patch	
-	ifeq ($(WITH_GLUCOSE),1)
+	#ifeq ($(WITH_GLUCOSE), 1)
 		cp -r Glucose -t NuSMV-2.5.4
 		patch -p0 -N < glucose.patch
-	endif
+	#endif
 	touch nusmv.patched
 
 # This target configures nusmv for proper compilation on your system
@@ -66,7 +66,7 @@ ifeq ($(RECONFIGURE), yes)
 	# Note: because we didn't build the (nusmv-patched) version of CUDD explicitly
 	#       the configuration script will schedule a compilation of that library
 	#       before proceeding to the rest of the compilation.
-	cd $(NUSMV) && ./configure  $(solvers_config) \
+	cd $(NUSMV) && aclocal && autoconf && ./configure  $(solvers_config) \
 															--with-pic \
 															CFLAGS="-g -fPIC" \
 														  CXXFLAGS="-g -fPIC"
