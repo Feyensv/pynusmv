@@ -6,23 +6,23 @@ diff -Naur glucose/core/depend.mk minisat/core/depend.mk
 +  ../mtl/Alg.h SolverTypes.h
 +Solver.o: Solver.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
 +  ../mtl/Alg.h SolverTypes.h ../mtl/Sort.h
-+Solver_C.o: Solver_C.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
-+  ../mtl/Alg.h SolverTypes.h Solver_C.h
++Glucose_C.o: Glucose_C.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
++  ../mtl/Alg.h SolverTypes.h Glucose_C.h
 +Main.op: Main.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
 +  ../mtl/Alg.h SolverTypes.h
 +Solver.op: Solver.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
 +  ../mtl/Alg.h SolverTypes.h ../mtl/Sort.h
-+Solver_C.op: Solver_C.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
-+  ../mtl/Alg.h SolverTypes.h Solver_C.h
++Glucose_C.op: Glucose_C.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
++  ../mtl/Alg.h SolverTypes.h Glucose_C.h
 +Main.od: Main.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
 +  ../mtl/Alg.h SolverTypes.h
 +Solver.od: Solver.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
 +  ../mtl/Alg.h SolverTypes.h ../mtl/Sort.h
-+Solver_C.od: Solver_C.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
-+  ../mtl/Alg.h SolverTypes.h Solver_C.h
++Glucose_C.od: Glucose_C.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
++  ../mtl/Alg.h SolverTypes.h Glucose_C.h
 +Main.or: Main.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
 +  ../mtl/Alg.h SolverTypes.h
 +Solver.or: Solver.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
 +  ../mtl/Alg.h SolverTypes.h ../mtl/Sort.h
-+Solver_C.or: Solver_C.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
-+  ../mtl/Alg.h SolverTypes.h Solver_C.h
++Glucose_C.or: Glucose_C.C Solver.h ../mtl/Vec.h ../mtl/Heap.h ../mtl/Vec.h \
++  ../mtl/Alg.h SolverTypes.h Glucose_C.h

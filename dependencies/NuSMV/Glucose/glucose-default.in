@@ -14,6 +14,6 @@ glucose_dir=glucose-syrup-${glucose_ver}
 #minisat_patch=MiniSat_v${minisat_ver}_nusmv.patch
 glucose_link=Glucose_v${glucose_ver}
 glucose_libname=Glucose
-glucose_ifcname=Solver_C.h
+glucose_ifcname=Glucose_C.h
 
 #patched_tag=patched_${minisat_ver}
