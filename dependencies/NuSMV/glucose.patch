@@ -123,7 +123,7 @@ diff -Naur NuSMV-2.5.4/nusmv/configure.ac NuSMV-2.5.4/nusmv/patchedconfigure.ac
  if  [ test "x$ac_have_minisat" = "xno" ] && [ test "x$ac_have_zchaff" = "xno" ]; then
 diff -Naur NuSMV-2.5.4/nusmv/Makefile.am NuSMV-2.5.4/nusmv/Makefile2.am 
 --- NuSMV-2.5.4/nusmv/Makefile.am	2011-10-21 14:25:39.000000000 +0200
-+++ NuSMV-2.5.4/nusmv/Makefile2.am	2018-02-13 14:50:50.924940392 +0100
++++ NuSMV-2.5.4/nusmv/Makefile2.am	2018-02-14 16:50:49.000461000 +0100
 @@ -47,7 +47,7 @@
  AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" @CPPFLAGS@
  CUDD_MAKEFILE = @cudd_mkf@
@@ -150,7 +150,24 @@ diff -Naur NuSMV-2.5.4/nusmv/Makefile.am NuSMV-2.5.4/nusmv/Makefile2.am
  
  # ----------------------------------------------------------------------
  # Programs to be built
-diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile.am NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile2.am
+@@ -123,7 +124,7 @@
+ 	$(top_builddir)/src/librbcdag.la \
+ 	-L$(top_srcdir)/$(CUDD_DIR)/lib \
+ 	-lcudd -lcudd_util -lmtr -lst   \
+-        $(readline_libs) $(zchaff_libs) $(minisat_libs) $(expat_libs) $(regex_libs)
++        $(readline_libs) $(zchaff_libs) $(minisat_libs) $(glucose_libs) $(expat_libs) $(regex_libs)
+ 
+ libnusmv_la_DEPENDENCIES = $(top_builddir)/src/libnusmvsrc.la	\
+ 	$(top_builddir)/src/librbcdag.la			\
+@@ -137,7 +138,7 @@
+ 	$(top_builddir)/src/libnusmvsrc.la \
+ 	-L$(top_srcdir)/$(CUDD_DIR)/lib \
+ 	-lcudd -lcudd_util -lmtr -lst   \
+-        $(readline_libs) $(zchaff_libs) $(minisat_libs) $(expat_libs) $(regex_libs)
++        $(readline_libs) $(zchaff_libs) $(minisat_libs) $(glucose_libs) $(expat_libs) $(regex_libs)
+ 
+ libnusmvcore_la_DEPENDENCIES = $(top_builddir)/src/libnusmvsrc.la	\
+ $(CUDD_DEPENDENCY)diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile.am NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile2.am
 --- NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile.am	2011-10-12 11:04:36.000000000 +0200
 +++ NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile2.am	2018-02-10 18:32:49.276020000 +0100
 @@ -60,15 +60,25 @@
@@ -188,7 +205,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/Makefile.am NuSMV-2.5.4/nusmv/src/s
  satMiniSatIfc.h : $(minisatincdir)/$(minisat_ifcname) $(top_builddir)/nusmv-config.h
  	cp $(minisatincdir)/$(minisat_ifcname)  $@
 +
-+# Generation of C interface from Solver_C.h (glucose) - if needed
++# Generation of C interface from Glucose_C.h (glucose) - if needed
 +satGlucoseIfc.h : $(glucoseincdir)/$(glucose_ifcname) $(top_builddir)/nusmv-config.h
 +	cp $(glucoseincdir)/$(glucose_ifcname)  $@
 diff -Naur NuSMV-2.5.4/nusmv/src/sat/satUtils.c NuSMV-2.5.4/nusmv/src/sat/satUtils2.c 
@@ -936,23 +953,34 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.h NuSMV-2.5.4/nusmv/src/
 diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/satGlucoseIfc.h NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/satGlucoseIfc.h
 --- NuSMV-2.5.4/nusmv/src/sat/solvers/satGlucoseIfc.h	1970-01-01 01:00:00.000000000 +0100
 +++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/satGlucoseIfc.h	2018-02-10 11:14:05.048483000 +0100
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,27 @@
 +/*
 + * Wrapper for Solver.h
 + */
-+#ifndef PYNUSMV_SOLVER_C_H
-+#define PYNUSMV_SOLVER_C_H
++#ifndef PYNUSMV_GLUCOSE_C_H
++#define PYNUSMV_GLUCOSE_C_H
 +
 +#define Glucose_ptr void *
 +
-+Glucose_ptr Glucose_create();
++Glucose_ptr Glucose_Create();
 +void Glucose_Delete(Glucose_ptr);
++int Glucose_Nof_Variables(Glucose_ptr);
++int Glucose_Nof_Clauses(Glucose_ptr);
++int Glucose_New_Variable(Glucose_ptr);
 +int Glucose_Add_Clause(Glucose_ptr, int *clause_lits, int nof_lits);
 +int Glucose_Solve(Glucose_ptr);
-+int Glucose_Solve_Assuming(Glucose_ptr, int nof_assumed_lits, int *assumed_lits);
++int Glucose_Solve_Assume(Glucose_ptr, int nof_assumed_lits, int *assumed_lits);
++int Glucose_simplifyDB(Glucose_ptr);
++int Glucose_Get_Value(Glucose_ptr, int var_num);
++int Glucose_Get_Nof_Conflict_Lits(Glucose_ptr ms);
++void MiniSat_Get_Conflict_Lits(Glucose_ptr ms, int* conflict_lits);
 +
-+//TODO keep up to date with Solver_C.h in glucose directory
-+#endif //PYNUSMV_SOLVER_C_H
++void Glucose_Set_Polarity_Mode(Glucose_ptr ms, int mode);
++int Glucose_Get_Polarity_Mode(Glucose_ptr ms);
++void Glucose_Set_Random_Seed(Glucose_ptr ms, double seed);
++
++//PREFERRED VARIABLES UNUSED BY PYNUSMV
++#endif //PYNUSMV_GLUCOSE_C_H
 diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose_private.h
 --- NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h	1970-01-01 01:00:00.000000000 +0100
 +++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose_private.h	2018-01-23 21:29:39.869832000 +0100

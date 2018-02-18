@@ -375,7 +375,7 @@ diff -Naur glucose-syrup-4.1/Makefile glucose/Makefile
 +# ----------------------------------------------------------------------
 +# this target is invoked by the builder
 +lib: $(EXT_LIBNAME) $(EXT_LIBIFC)
-+	@echo Done
++	#@echo Done
 +
 +clean:
 +	cd $(COREDIR) && $(MAKE) clean
@@ -384,7 +384,7 @@ diff -Naur glucose-syrup-4.1/Makefile glucose/Makefile
 +# ----------------------------------------------------------------------
 +
 +$(COREDIR)/$(LIBNAME):
-+	cd $(COREDIR) && $(MAKE) libs && $(RANLIB) $(LIBNAME) #libs libp libr libd TODO
++	cd $(COREDIR) && $(MAKE) libr && $(RANLIB) $(LIBNAME) #libs libp libr libd TODO
 +
 +$(EXT_LIBNAME): $(COREDIR)/$(LIBNAME)
 +	$(LN) $(COREDIR)/$(LIBNAME) $(EXT_LIBNAME)

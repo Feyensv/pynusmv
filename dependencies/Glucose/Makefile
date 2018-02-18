@@ -28,7 +28,7 @@ glucose.unpacked:
 glucose.patched: glucose.unpacked
 	patch -p0 -N < solver.patch #Random seed functionality for NUSMV
 	patch -p0 -N < glucose_wrappers.patch #C wrappers + Glucose Makefile
-	# patch -p0 -N < nusmv.patch #depends.mk patch, seems unnecessary, to verify later
+	patch -p0 -N < nusmv.patch #depends.mk patch, seems unnecessary, to verify later
     # Patch the makefiles to produce position independent code
     # This is necessary to create a sharedlib containing the minisat symbols
 	patch -p0 -N < makefiles.patch #-fPic cflag : necessary?
