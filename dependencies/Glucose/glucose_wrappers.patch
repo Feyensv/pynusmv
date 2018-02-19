@@ -1,6 +1,6 @@
-diff -Naur glucose-syrup-4.1/simp/Glucose_C.C glucose/simp/Glucose_C.C
---- glucose-syrup-4.1/simp/Glucose_C.C	1970-01-01 01:00:00.000000000 +0100
-+++ glucose/simp/Glucose_C.C	2018-02-10 13:52:35.885525000 +0100
+diff -Naur glucose-syrup-4.1/simp/Glucose_C.cc glucose/simp/Glucose_C.cc
+--- glucose-syrup-4.1/simp/Glucose_C.cc	1970-01-01 01:00:00.000000000 +0100
++++ glucose/simp/Glucose_C.cc	2018-02-10 13:52:35.885525000 +0100
 @@ -0,0 +1,145 @@
 +/*
 + *
@@ -83,7 +83,7 @@ diff -Naur glucose-syrup-4.1/simp/Glucose_C.C glucose/simp/Glucose_C.C
 +    return 0;
 +}
 +
-+extern "C" Glucose_simplifyDB(Glucose_ptr ms)
++extern "C" int Glucose_simplifyDB(Glucose_ptr ms)
 +{
 +    ((SimpSolver *)ms->simplify();
 +    if(((SimpSolver *)ms)->okay()
@@ -147,9 +147,9 @@ diff -Naur glucose-syrup-4.1/simp/Glucose_C.C glucose/simp/Glucose_C.C
 +    solver.setRandomSeed(seed);
 +}
 +
-diff -Naur glucose-syrup-4.1/core/Glucose_C.C glucose/core/Glucose_C.C
---- glucose-syrup-4.1/core/Glucose_C.C	1970-01-01 01:00:00.000000000 +0100
-+++ glucose/core/Glucose_C.C	2018-02-10 13:57:19.175100000 +0100
+diff -Naur glucose-syrup-4.1/core/Glucose_C.cc glucose/core/Glucose_C.cc
+--- glucose-syrup-4.1/core/Glucose_C.cc	1970-01-01 01:00:00.000000000 +0100
++++ glucose/core/Glucose_C.cc	2018-02-10 13:57:19.175100000 +0100
 @@ -0,0 +1,145 @@
 +/*
 + *
@@ -159,7 +159,7 @@ diff -Naur glucose-syrup-4.1/core/Glucose_C.C glucose/core/Glucose_C.C
 +
 +#include "Solver.h"
 +extern "C" {
-+    #include "../core/Glucose_C.h"
++    #include "Glucose_C.h"
 +}
 +
 +extern "C" Glucose_ptr Glucose_Create()
@@ -232,7 +232,7 @@ diff -Naur glucose-syrup-4.1/core/Glucose_C.C glucose/core/Glucose_C.C
 +    return 0;
 +}
 +
-+extern "C" Glucose_simplifyDB(Glucose_ptr ms)
++extern "C" int Glucose_simplifyDB(Glucose_ptr ms)
 +{
 +    ((Solver *)ms->simplify();
 +    if(((Solver *)ms)->okay()
@@ -303,8 +303,8 @@ diff -Naur glucose-syrup-4.1/simp/Glucose_C.h glucose/simp/Glucose_C.h
 +/*
 + * Wrapper for Solver.h
 + */
-+#ifndef PYNUSMV_GLUCOSE_C_H
-+#define PYNUSMV_GLUCOSE_C_H
++#ifndef GLUCOSE_C_H
++#define GLUCOSE_C_H
 +
 +#define Glucose_ptr void *
 +
@@ -326,7 +326,7 @@ diff -Naur glucose-syrup-4.1/simp/Glucose_C.h glucose/simp/Glucose_C.h
 +void Glucose_Set_Random_Seed(Glucose_ptr ms, double seed);
 +
 +//PREFERRED VARIABLES UNUSED BY PYNUSMV
-+#endif //PYNUSMV_GLUCOSE_C_H
++#endif //GLUCOSE_C_H
 diff -Naur glucose-syrup-4.1/core/Glucose_C.h glucose/core/Glucose_C.h
 --- glucose-syrup-4.1/core/Glucose_C.h	1970-01-01 01:00:00.000000000 +0100
 +++ glucose/core/Glucose_C.h	2018-02-10 13:15:35.595935000 +0100
@@ -334,8 +334,8 @@ diff -Naur glucose-syrup-4.1/core/Glucose_C.h glucose/core/Glucose_C.h
 +/*
 + * Wrapper for Solver.h
 + */
-+#ifndef PYNUSMV_GLUCOSE_C_H
-+#define PYNUSMV_GLUCOSE_C_H
++#ifndef GLUCOSE_C_H
++#define GLUCOSE_C_H
 +
 +#define Glucose_ptr void *
 +
@@ -357,7 +357,7 @@ diff -Naur glucose-syrup-4.1/core/Glucose_C.h glucose/core/Glucose_C.h
 +void Glucose_Set_Random_Seed(Glucose_ptr ms, double seed);
 +
 +//PREFERRED VARIABLES UNUSED BY PYNUSMV
-+#endif //PYNUSMV_GLUCOSE_C_H
++#endif //GLUCOSE_C_H
 diff -Naur glucose-syrup-4.1/Makefile glucose/Makefile
 --- glucose-syrup-4.1/Makefile	1970-01-01 01:00:00.000000000 +0100
 +++ glucose/core/Makefile	2018-01-02 11:13:23.960000000 +0100
