@@ -4,7 +4,7 @@ diff -Naur glucose-syrup-4.1/simp/Glucose_C.cc glucose/simp/Glucose_C.cc
 @@ -0,0 +1,145 @@
 +/*
 + *
-+ * Wrapper for simp/Solver.cc
++ * Wrapper for simp/SimpSolver.cc
 + *
 + */
 +
@@ -51,7 +51,7 @@ diff -Naur glucose-syrup-4.1/simp/Glucose_C.cc glucose/simp/Glucose_C.cc
 +        const int lit = clause_lits[i];
 +        //2 asserts ?
 +        int var = abs(lit);
-+        clauses.push((lit>0) ? Lit(var) : ~Lit(var));
++        clauses.push((lit>0) ? mkLit(var) : ~mkLit(var));
 +    }
 +    ((SimpSolver *)ms) -> addClause(clauses);
 +    if(((SimpSolver *)ms)->okay()){
@@ -73,7 +73,7 @@ diff -Naur glucose-syrup-4.1/simp/Glucose_C.cc glucose/simp/Glucose_C.cc
 +        const int lit = assumed_lits[i];
 +        //2 asserts ?
 +        int var = abs(lit);
-+        clauses.push((lit>0) ? Lit(var) : ~Lit(var));
++        clauses.push((lit>0) ? mkLit(var) : ~mkLit(var));
 +    }
 +
 +    if(((SimpSolver *)ms)->solve(clauses, true)){
@@ -200,7 +200,7 @@ diff -Naur glucose-syrup-4.1/core/Glucose_C.cc glucose/core/Glucose_C.cc
 +        const int lit = clause_lits[i];
 +        //2 asserts ?
 +        int var = abs(lit);
-+        clauses.push((lit>0) ? Lit(var) : ~Lit(var));
++        clauses.push((lit>0) ? mkLit(var) : ~mkLit(var));
 +    }
 +    ((Solver *)ms) -> addClause(clauses);
 +    if(((Solver *)ms)->okay()){
@@ -222,7 +222,7 @@ diff -Naur glucose-syrup-4.1/core/Glucose_C.cc glucose/core/Glucose_C.cc
 +        const int lit = assumed_lits[i];
 +        //2 asserts ?
 +        int var = abs(lit);
-+        clauses.push((lit>0) ? Lit(var) : ~Lit(var));
++        clauses.push((lit>0) ? mkLit(var) : ~mkLit(var));
 +    }
 +
 +    if(((Solver *)ms)->solve(clauses, true)){
