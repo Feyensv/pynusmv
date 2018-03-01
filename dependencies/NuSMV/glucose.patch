@@ -215,7 +215,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/satUtils.c NuSMV-2.5.4/nusmv/src/sat/satUti
  #include "solvers/SatMinisat.h"
  #endif
  
-+#if NUSMV_HAVE_GLUCOSE
++#if NUSMV_HAVE_SOLVER_GLUCOSE
 +#include "solvers/SatGlucose.h"
 +#endif
 +
@@ -295,7 +295,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c NuSMV-2.5.4/nusmv/src/
 +#include "SatGlucose_private.h"
 +#include "utils/error.h"
 +
-+static void sat_glucose_finalise ARGS((Object_ptr object, void *dummy));
++static void sat_glucose_finalize ARGS((Object_ptr object, void *dummy));
 +static int _get_clause_size ARGS((const int *clause));
 +
 +SatGlucose_ptr SatGlucose_create(const char* name, boolean enable_proof_logging)
@@ -592,7 +592,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c NuSMV-2.5.4/nusmv/src/
 +void
 +sat_glucose_destroy_group(const SatIncSolver_ptr solver, SatSolverGroup group)
 +{
-+    SatGlucose_ptr self = SAT_GLUCOSe(solver);
++    SatGlucose_ptr self = SAT_GLUCOSE(solver);
 +    int glucoseClause[2];
 +
 +
@@ -656,7 +656,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c NuSMV-2.5.4/nusmv/src/
 +//#ifdef MINISAT_WITH_PROOF_LOGGING
 +    //MiniSat_Add_Clause(self->minisatSolver, minisatClause, 1, 0);
 +//#else
-+    Glucose_Add_Clause(self->glucoseSolverSolver, glucoseClause, 1);
++    Glucose_Add_Clause(self->glucoseSolver, glucoseClause, 1);
 +//#endif
 +    /* with new minisat interface it is not necessary to check
 +       the successfulness of adding a clause */
@@ -779,7 +779,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c NuSMV-2.5.4/nusmv/src/
 +    }
 +    FREE(lits);
 +
-+    return conflict
++    return conflict;
 +}
 +
 +void sat_glucose_set_random_mode(SatSolver_ptr solver, double seed)
@@ -790,7 +790,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c NuSMV-2.5.4/nusmv/src/
 +    if (seed == 0) {
 +        sat_glucose_set_polarity_mode(solver, polarity_user);
 +    }else {
-+        Glucose_Set_Random_Seed(self->minisatSolver, seed);
++        Glucose_Set_Random_Seed(self->glucoseSolver, seed);
 +        sat_glucose_set_polarity_mode(solver, polarity_rnd);
 +    }
 +}
@@ -891,7 +891,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c NuSMV-2.5.4/nusmv/src/
 +    FREE(self);
 +}
 +
-+static int _get_clause_size(cont int * clause){
++static int _get_clause_size(const int * clause){
 +    int j=0;
 +
 +    if ((int *)NULL != clause) {
@@ -953,14 +953,17 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.h NuSMV-2.5.4/nusmv/src/
 diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/satGlucoseIfc.h NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/satGlucoseIfc.h
 --- NuSMV-2.5.4/nusmv/src/sat/solvers/satGlucoseIfc.h	1970-01-01 01:00:00.000000000 +0100
 +++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/satGlucoseIfc.h	2018-02-10 11:14:05.048483000 +0100
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,30 @@
 +/*
 + * Wrapper for Solver.h
 + */
-+#ifndef PYNUSMV_GLUCOSE_C_H
-+#define PYNUSMV_GLUCOSE_C_H
++#ifndef GLUCOSE_C_H
++#define GLUCOSE_C_H
 +
 +#define Glucose_ptr void *
++
++enum { polarity_true = 0, polarity_false = 1, 
++       polarity_user = 2, polarity_rnd = 3 };
 +
 +Glucose_ptr Glucose_Create();
 +void Glucose_Delete(Glucose_ptr);
@@ -973,18 +976,18 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/satGlucoseIfc.h NuSMV-2.5.4/nusmv/s
 +int Glucose_simplifyDB(Glucose_ptr);
 +int Glucose_Get_Value(Glucose_ptr, int var_num);
 +int Glucose_Get_Nof_Conflict_Lits(Glucose_ptr ms);
-+void MiniSat_Get_Conflict_Lits(Glucose_ptr ms, int* conflict_lits);
++void Glucose_Get_Conflict_Lits(Glucose_ptr ms, int* conflict_lits);
 +
 +void Glucose_Set_Polarity_Mode(Glucose_ptr ms, int mode);
 +int Glucose_Get_Polarity_Mode(Glucose_ptr ms);
 +void Glucose_Set_Random_Seed(Glucose_ptr ms, double seed);
 +
 +//PREFERRED VARIABLES UNUSED BY PYNUSMV
-+#endif //PYNUSMV_GLUCOSE_C_H
++#endif //GLUCOSE_C_H
 diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose_private.h
 --- NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h	1970-01-01 01:00:00.000000000 +0100
 +++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose_private.h	2018-01-23 21:29:39.869832000 +0100
-@@ -0,0 +1,108 @@
+@@ -0,0 +1,109 @@
 +//
 +// Created by ritsu on 23/01/18.
 +//
@@ -993,7 +996,8 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h NuSMV-2.5.4/nu
 +#define PYNUSMV_SATGLUCOSE_PRIVATE_H
 +
 +#include "SatGlucose.h"
-+//ifc file needed?
++#include "satGlucoseIfc.h"
++//ifc file needed? --> for Glucose_ptr
 +
 +#include "sat/SatIncSolver_private.h"
 +#include "utils/assoc.h"
@@ -1005,8 +1009,8 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h NuSMV-2.5.4/nu
 +    Glucose_ptr glucoseSolver; /* actual instance of glucose */
 +    /* All input variables are represented by the  internal ones inside the
 +       SatGlucose. Bellow two hash table perform the conversion in both ways */
-+    hash_ptr cnfVar2minisatVar;/* converts CNF variable to internal variable */
-+    hash_ptr minisatVar2cnfVar;/* converts internal variable into CNF variable */
++    hash_ptr cnfVar2glucoseVar;/* converts CNF variable to internal variable */
++    hash_ptr glucoseVar2cnfVar;/* converts internal variable into CNF variable */
 +
 +    /* contains set of conflicting assumptions after using
 +       SatMinisat_solve_permanent_group_assume */
@@ -1015,7 +1019,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h NuSMV-2.5.4/nu
 +    /* A clause and its current maximum length. This was added here in
 +       order to replace a statically allocated, fixed-size array and
 +       length indicator in sat_minisat_add. */
-+    int* minisatClause;
++    int* glucoseClause;
 +
 +    unsigned int glucoseClauseSize;
 +    unsigned int glucose_itp_group;
