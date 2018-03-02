@@ -43,8 +43,8 @@
 %include "../../../../dependencies/NuSMV/NuSMV-2.5.4/nusmv/src/sat/solvers/SatZChaff.h"
 %include "../../../../dependencies/NuSMV/NuSMV-2.5.4/nusmv/src/sat/solvers/satZChaffIfc.h"
 
-//%include "../../../../dependencies/NuSMV/NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.h"
-//%include "../../../../dependencies/NuSMV/NuSMV-2.5.4/nusmv/src/sat/solvers/satGlucoseIfc.h"
+%include "../../../../dependencies/NuSMV/NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.h"
+%include "../../../../dependencies/NuSMV/NuSMV-2.5.4/nusmv/src/sat/solvers/satGlucoseIfc.h"
 
 %inline %{
 

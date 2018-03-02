@@ -327,7 +327,7 @@ diff -Naur glucose-syrup-4.1/core/Glucose_C.cc glucose/core/Glucose_C.cc
 diff -Naur glucose-syrup-4.1/simp/Glucose_C.h glucose/simp/Glucose_C.h
 --- glucose-syrup-4.1/simp/Glucose_C.h	1970-01-01 01:00:00.000000000 +0100
 +++ glucose/simp/Glucose_C.h	2018-02-10 13:15:35.595935000 +0100
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,30 @@
 +/*
 + * Wrapper for Solver.h
 + */
@@ -335,6 +335,9 @@ diff -Naur glucose-syrup-4.1/simp/Glucose_C.h glucose/simp/Glucose_C.h
 +#define GLUCOSE_C_H
 +
 +#define Glucose_ptr void *
++
++enum { polarity_true = 0, polarity_false = 1, 
++       polarity_user = 2, polarity_rnd = 3 };
 +
 +Glucose_ptr Glucose_Create();
 +void Glucose_Delete(Glucose_ptr);
@@ -347,7 +350,7 @@ diff -Naur glucose-syrup-4.1/simp/Glucose_C.h glucose/simp/Glucose_C.h
 +int Glucose_simplifyDB(Glucose_ptr);
 +int Glucose_Get_Value(Glucose_ptr, int var_num);
 +int Glucose_Get_Nof_Conflict_Lits(Glucose_ptr ms);
-+void MiniSat_Get_Conflict_Lits(Glucose_ptr ms, int* conflict_lits);
++void Glucose_Get_Conflict_Lits(Glucose_ptr ms, int* conflict_lits);
 +
 +void Glucose_Set_Polarity_Mode(Glucose_ptr ms, int mode);
 +int Glucose_Get_Polarity_Mode(Glucose_ptr ms);
