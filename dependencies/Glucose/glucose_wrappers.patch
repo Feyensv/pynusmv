@@ -46,7 +46,7 @@ diff -Naur glucose-syrup-4.1/simp/Glucose_C.cc glucose/simp/Glucose_C.cc
 +    return ((SimpSolver *)ms)->newVar();//+1?
 +}
 +
-+extern "C" int Glucose_addClause(Glucose_ptr ms, int *clause_lits, int nof_lits)
++extern "C" int Glucose_Add_Clause(Glucose_ptr ms, int *clause_lits, int nof_lits)
 +{
 +    int i;
 +    vec<Lit> clauses;
