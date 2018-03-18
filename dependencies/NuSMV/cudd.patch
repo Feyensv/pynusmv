@@ -425,3 +425,18 @@
  CFLAGS  = $(ICFLAGS) $(MFLAG) $(XCFLAGS)
  
  LINTFLAGS = -u -n
+diff -Naur NuSMV-2.5.4/cudd-2.4.1.1/util/pipefork.c NuSMV-2.5.4/cudd-2.4.1.1/util/patchedpipefork.c 
+--- NuSMV-2.5.4/cudd-2.4.1.1/util/pipefork.c	2011-10-12 11:05:19.000000000 +0200
++++ NuSMV-2.5.4/cudd-2.4.1.1/util/patchedpipefork.c	2018-03-06 15:39:37.687015000 +0100
+@@ -40,11 +40,7 @@
+     int topipe[2], frompipe[2];
+     char buffer[1024];
+ 
+-#if (defined __hpux) || (defined __osf__) || (defined _IBMR2) || (defined __SVR4) || (defined __CYGWIN32__) || (defined __MINGW32__) 
+     int status;
+-#else
+-    union wait status;
+-#endif
+ 
+     /* create the PIPES...
+      * fildes[0] for reading from command
