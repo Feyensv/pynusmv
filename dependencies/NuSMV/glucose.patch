@@ -268,7 +268,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/satUtils.c NuSMV-2.5.4/nusmv/src/sat/satUti
  # endif
 +  } else if (strcasecmp(GLUCOSE_NAME, satSolver) == 0) {
 +#if NUSMV_HAVE_SOLVER_GLUCOSE
-+    solver = SAT_SOLVER(SatGlucose_create(GLUCOSE_NAME, false));
++    solver = SAT_INC_SOLVER(SatGlucose_create(GLUCOSE_NAME, false));
 +#endif
    }
  
@@ -279,7 +279,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/satUtils.c NuSMV-2.5.4/nusmv/src/sat/satUti
  # endif
 +  } else if (strcasecmp(GLUCOSE_NAME, satSolver) == 0) {
 +#if NUSMV_HAVE_SOLVER_GLUCOSE
-+    solver = SAT_SOLVER(SatGlucose_create(GLUCOSE_NAME, true));
++    solver = SAT_INC_SOLVER(SatGlucose_create(GLUCOSE_NAME, true));
 +#endif
    }
  
@@ -287,7 +287,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/satUtils.c NuSMV-2.5.4/nusmv/src/sat/satUti
 diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose.c
 --- NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c	1970-01-01 01:00:00.000000000 +0100
 +++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose.c	2018-02-10 18:03:43.939788000 +0100
-@@ -0,0 +1,612 @@
+@@ -0,0 +1,639 @@
 +//
 +// Created by ritsu on 15/01/18.
 +//
@@ -810,6 +810,33 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c NuSMV-2.5.4/nusmv/src/
 +    SAT_GLUCOSE_CHECK_INSTANCE(self);
 +
 +    return Glucose_Get_Polarity_Mode(self->glucoseSolver);
++}
++
++int* sat_glucose_get_glucoseClause (const SatGlucose_ptr self)
++{
++  SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++  return self->glucoseClause;
++}
++
++int sat_glucose_get_glucoseClauseSize (const SatGlucose_ptr self)
++{
++  SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++  return self->glucoseClauseSize;
++}
++void sat_glucose_enlarge_glucoseClause (const SatGlucose_ptr self,
++                                        unsigned int minSize)
++{
++  SAT_GLUCOSE_CHECK_INSTANCE(self);
++
++  while (self->glucoseClauseSize < minSize) {
++    self->glucoseClauseSize = self->glucoseClauseSize * 2 + 1;
++    self->glucoseClause = REALLOC(int,
++                                  self->glucoseClause,
++                                  self->glucoseClauseSize);
++    nusmv_assert(self->glucoseClause != (int*) NULL);
++  }
 +}
 +
 +void sat_glucose_init(SatGlucose_ptr self, const char* name,
