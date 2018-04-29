@@ -43,7 +43,7 @@ clean:
 	rm last_config.pickle
 	rm nusmv.unpacked
 	rm nusmv.patched
-	#rm nusmv.configured --> #never created
+	rm nusmv.configured
 	rm nusmv.built
 
 # This target just unpacks the archive containing nusmv
@@ -74,6 +74,7 @@ ifeq ($(RECONFIGURE), yes)
 														  CXXFLAGS="-g -fPIC"
 
 	python3 ./reconfiguration_needed.py --save
+	touch nusmv.configured
 endif
 
 # This target proceeds to the build (proper) of the nusmv codebase

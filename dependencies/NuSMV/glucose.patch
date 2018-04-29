@@ -6,7 +6,7 @@ diff -Naur NuSMV-2.5.4/nusmv/configure.ac NuSMV-2.5.4/nusmv/patchedconfigure.ac
  fi], [enable_zchaff=no])
  
 +#Glucose configuration
-+glucose_nusmv=$srcdir/../Glucose #TODO
++glucose_nusmv=$srcdir/../Glucose
 +if [ test -f  $glucose_nusmv/glucose-default]; then
 +. $glucose_nusmv/glucose-default
 +else
@@ -41,7 +41,7 @@ diff -Naur NuSMV-2.5.4/nusmv/configure.ac NuSMV-2.5.4/nusmv/patchedconfigure.ac
 +# Glucose include dir:
 +AC_SUBST(glucoseincdir)
 +AC_ARG_WITH(glucose-incdir,
-+[  --with-glucose-incdir=<dir> The directory the interface files (Solver_C.h) is contained in.
++[  --with-glucose-incdir=<dir> The directory the interface files (Glucose_C.h) is contained in.
 +			  Depends on --enable-glucose],
 +[ if [ test -x $withval ]; then
 +    glucoseincdir=`cd $withval && pwd`
@@ -57,7 +57,7 @@ diff -Naur NuSMV-2.5.4/nusmv/configure.ac NuSMV-2.5.4/nusmv/patchedconfigure.ac
 +
 +# If Glucose must be linked:
 +AC_ARG_ENABLE(glucose,
-+  [  --enable-glucose  Makes the Glucose SAT solver usable from within NuSMV (default is yes)],
++  [  --enable-glucose  Makes the Glucose SAT solver usable from within NuSMV (default is no)],
 +  [if test "x$enableval" = "xyes"; then
 +    enable_glucose=yes
 +   fi], [enable_glucose=no])
@@ -289,7 +289,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.c NuSMV-2.5.4/nusmv/src/
 +++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose.c	2018-02-10 18:03:43.939788000 +0100
 @@ -0,0 +1,639 @@
 +//
-+// Created by ritsu on 15/01/18.
++// Created by Victor Feyens on 15/01/18.
 +//
 +
 +#include "SatGlucose_private.h"
@@ -932,7 +932,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose.h NuSMV-2.5.4/nusmv/src/
 +++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose.h	2018-01-23 15:48:46.046642000 +0100
 @@ -0,0 +1,46 @@
 +//
-+// Created by ritsu on 15/01/18.
++// Created by Victor Feyens on 15/01/18.
 +//
 +
 +#ifndef PYNUSMV_SATGLUCOSE_H
@@ -1016,7 +1016,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h NuSMV-2.5.4/nu
 +++ NuSMV-2.5.4/nusmv/src/sat/solvers/glucose/SatGlucose_private.h	2018-01-23 21:29:39.869832000 +0100
 @@ -0,0 +1,109 @@
 +//
-+// Created by ritsu on 23/01/18.
++// Created by Victor Feyens on 23/01/18.
 +//
 +
 +#ifndef PYNUSMV_SATGLUCOSE_PRIVATE_H
@@ -1024,7 +1024,7 @@ diff -Naur NuSMV-2.5.4/nusmv/src/sat/solvers/SatGlucose_private.h NuSMV-2.5.4/nu
 +
 +#include "SatGlucose.h"
 +#include "satGlucoseIfc.h"
-+//ifc file needed? --> for Glucose_ptr
++//ifc file needed for Glucose_ptr
 +
 +#include "sat/SatIncSolver_private.h"
 +#include "utils/assoc.h"
