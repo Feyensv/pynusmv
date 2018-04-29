@@ -68,11 +68,10 @@ ifeq ($(RECONFIGURE), yes)
 	# Note: because we didn't build the (nusmv-patched) version of CUDD explicitly
 	#       the configuration script will schedule a compilation of that library
 	#       before proceeding to the rest of the compilation.
-	cd $(NUSMV) && aclocal && autoconf && autoreconf --force --install && ./configure  $(solvers_config) \
-															--with-pic \
-															CFLAGS="-g -fPIC" \
-														  CXXFLAGS="-g -fPIC"
-
+	cd $(NUSMV) && autoreconf --force --install && ./configure  $(solvers_config) \
+									--with-pic \
+									CFLAGS="-g -fPIC" \
+									CXXFLAGS="-g -fPIC"
 	python3 ./reconfiguration_needed.py --save
 	touch nusmv.configured
 endif
