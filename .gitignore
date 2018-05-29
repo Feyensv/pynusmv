@@ -6,6 +6,7 @@ pynusmv/__pycache__
 dependencies/MiniSat/minisat/*
 dependencies/ZChaff/zchaff64/*
 dependencies/NuSMV/NuSMV-2.5.4/*
+dependencies/Glucose/glucose-syrup-4.1/*
 
 # Ignore zchaff zip file
 dependencies/ZChaff/zchaff.64bit.2007.3.12.zip

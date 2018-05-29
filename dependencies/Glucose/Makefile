@@ -1,5 +1,5 @@
 ################################################################################
-# This make file serves the purpose of compiling and patching minisat for your
+# This make file serves the purpose of compiling and patching glucose for your
 # platform.
 #
 # This file is part of the pynusmv distribution. As such it is licensed to you
@@ -10,7 +10,7 @@
 # Author: V.Feyens <victor.feyens[at] student.uclouvain.be>
 ################################################################################
 
-# This target goes through all the steps required to compile MiniSat.
+# This target goes through all the steps required to compile Glucose.
 all: glucose.built
 
 # This target wipes off everything that has been unpacked and built.
@@ -26,15 +26,14 @@ glucose.unpacked:
 
 # patch glucose source code
 glucose.patched: glucose.unpacked
-	#patch -p0 -N < glucose.patch
-	patch -p0 -N < glucose_wrappers.patch #TODO only half of the wrappers are in this patch file (b.e. simp/Solver_C.h needed for the link to a lib).
-	# patch -p0 -N < nusmv.patch #depends.mk patch, seems unnecessary, to verify later
-    # Patch the makefiles to produce position independent code
-    # This is necessary to create a sharedlib containing the minisat symbols
-	patch -p0 -N < makefiles.patch #-fPic cflag : necessary?
+	patch -p0 -N < solver.patch #Random seed functionality for NUSMV
+	patch -p0 -N < glucose_wrappers.patch #C wrappers + Glucose Makefile
+    	# Patch the makefiles to produce position independent code
+    	# This is necessary to create a sharedlib containing the glucose symbols
+	patch -p0 -N < makefiles.patch #-fPic cflag
 	touch glucose.patched
 
 # This target proceeds to the build (proper) of the glucose codebase
 glucose.built: glucose.patched
-	make -C glucose-syrup-4.1 #TODO add parallel if needed
+	make -C glucose-syrup-4.1
 	

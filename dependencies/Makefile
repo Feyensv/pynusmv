@@ -10,12 +10,15 @@
 # Author: X. Gillard <xavier.gillard [at] uclouvain.be>
 ################################################################################
 
+solvers.build = minisat.build
+solvers.clean = minisat.clean
 ifeq ($(WITH_ZCHAFF), 1)
-	solvers.build=minisat.build zchaff.build
-	solvers.clean=minisat.clean zchaff.clean
-else#TODO ifeq( with glucose) --> make glucose
-	solvers.build=minisat.build glucose.build
-	solvers.clean=minisat.clean glucose.clean
+	solvers.build += zchaff.build
+	solvers.clean += zchaff.clean
+endif 
+ifeq ($(WITH_GLUCOSE), 1)
+	solvers.build += glucose.build
+	solvers.clean += glucose.clean
 endif
 
 # This target builds the libnusmv shared library which is used by the lower
